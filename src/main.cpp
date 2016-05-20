@@ -20,7 +20,7 @@
 
 Servo myservo;  // create servo object to control a servo // a maximum of eight servo objects can be created
 int servoPos = 0;    // variable to store the servo position
-
+uint8_t servoPin = 5;
 //For NTP Time
 
 unsigned int localPort = 2390;      // local port to listen for UDP packets
@@ -46,11 +46,25 @@ WiFiUDP udp;
 // specify the port to listen on as an argument
 WiFiServer server(80);
 
+void alertWithLED(int numTimes, int onTimeMS, int offTimeMS)
+{
+  int BUILTIN_LED_CORRECT = 2; //GPIO 2 and pin 2
+  pinMode(BUILTIN_LED_CORRECT,OUTPUT);
+  for(int counter = 0; counter <= numTimes; counter += 1 )
+  {
+    digitalWrite(BUILTIN_LED_CORRECT,LOW); //Turns on LED
+    delay(onTimeMS);
+    digitalWrite(BUILTIN_LED_CORRECT,HIGH); //Turns off LED
+    delay(offTimeMS);
+  }
+}
+
 
 void startServoCode(unsigned long timerEndTime, int timerEndHours, int timerEndMinutes) {
   //***** Start of servo code ****
                       Serial.println("Servo code started...");
 
+                      myservo.attach(servoPin);
                       myservo.write(0);
                       Serial.println("ServoValue=0");
 
@@ -69,6 +83,8 @@ void startServoCode(unsigned long timerEndTime, int timerEndHours, int timerEndM
                         delay(30);                       // waits 15ms for the servo to reach the position
                       }
                       myservo.write(0);
+                      delay (3000); myservo.detach(); //Waits 3 seconds before detaching so servo can finish moving.
+
                       Serial.println("ServoValue=0");
 
                       Serial.println("Waiting " + String(timerEndHours) + " Hours and " + String(timerEndMinutes) + " minutes...");
@@ -83,6 +99,7 @@ void startServoCode(unsigned long timerEndTime, int timerEndHours, int timerEndM
                      // delay(JTimeInMilliSec);  //25,200,000 = 7 hours, 30,600,000 = 8.5 hours, 23,400,000 = 6.5 hrs
 
 
+                      myservo.attach(servoPin);
                       myservo.write(180);
                       Serial.println("ServoValue=180");
                       delay(1500);  //heat up light
@@ -92,17 +109,24 @@ void startServoCode(unsigned long timerEndTime, int timerEndHours, int timerEndM
                       myservo.write(0);
                       Serial.println("ServoValue=180");
                       Serial.println("Slowly turning up light...");
+                      myservo.write(55);
+                      delay(2000) ; myservo.detach();
                       for(servoPos = 55; servoPos < 180; servoPos += 1 )  // goes from 0 degrees to 180 degrees
                       {                                  // in steps of 1 degree
-                        myservo.write(servoPos);              // tell servo to go to position in variable 'pos'
+                          myservo.attach(servoPin);
+                          myservo.write(servoPos);              // tell servo to go to position in variable 'pos'
+                          delay(1000);  myservo.detach(); //Need to delay until the servo stops moving before detachin1
+
                         Serial.println("ServoValue=" + String(servoPos));
-                        delay(14400);                       // waits 15ms for the servo to reach the position
+                        delay(13400);                       // waits 14.4seconds (minus the 1000ms before detaching) so that the light brightens over 30 mins (14.4*(180-55))
+                        alertWithLED(1, 50, 0);
                       }
                       Serial.println("Ending servo code and starting infinite loop.");
 
                       while(true)
                       {
-                        delay(1000);
+                          OTAloopOnce();
+                          delay(1000);
                       }
 }
 
@@ -169,7 +193,7 @@ Serial.println("\nStarting connection to server...");
     Serial.flush();
 
       // do nothing forevermore:
-    while (true);
+    //while (true);
   }
 
 }
@@ -206,7 +230,7 @@ void getCurrentNTPTime(unsigned long &currentEpoch, int &currentHour, int &curre
 
   sendNTPpacket(timeServerIP); // send an NTP packet to a time server
   // wait to see if a reply is available
-  delay(1000);
+  delay(2000);
 
   int cb = udp.parsePacket();
   if (!cb) {
@@ -251,13 +275,26 @@ void getCurrentNTPTime(unsigned long &currentEpoch, int &currentHour, int &curre
 void setup() {
   OTAsetup();
   OTAloopOnce();
-  Serial.begin(9600);
+
+  pinMode(BUILTIN_LED,OUTPUT);
+  digitalWrite(BUILTIN_LED,HIGH);
+
+  //On startup, blink built-in LED twice, 100ms on, 100ms off
+  alertWithLED(5,50,50);
+
+  Serial.begin(115200);
   delay(10);
 
 
-  // prepare GPIO5
-  pinMode(5, OUTPUT);
-  digitalWrite(5, 0);
+  // prepare GPIO for Servo as servoPin
+  pinMode(servoPin, OUTPUT);
+  digitalWrite(servoPin, 0);
+  // Attach servo to pin servoPin
+  myservo.attach(servoPin);
+  myservo.write(180);
+  delay(2000);
+  myservo.write(0);
+  delay(2000);  myservo.detach(); //Need to delay until the servo stops moving before detaching
 
 /*  //Not required any more since OTA makes sure it's connected to the network
   // Connect to WiFi network
@@ -293,8 +330,6 @@ void setup() {
   // Print the IP address
   Serial.println(WiFi.localIP());
 
-  // Attach servo to pin 4
-  myservo.attach(4);
 
 }
 
@@ -343,7 +378,8 @@ void loop() {
 //     client.println("<input type=submit> </input>");
 //     client.println("</form>");
 //     client.println("</html>");
-     String htmlCode = "<html><style>@media screen and (max-width: 800px){body {background-color: lightblue;font-size:5em;}input {width: 50em;  height: 10em;}</style><form>Time is " + String(startingHour) + ":" + String(startingMinute) + ":" + String(startingSecond) + " PDT (Valid Mar to Nov), which is an epoch of " + String(startingEpoch) + " seconds.  Please enter the wakeup time 30 mins before final alarm time.<p><input type=time name=JTime onchange=""this.form.submit()""></input><input type=submit> </input></form></html>";
+     String note = "";
+     String htmlCode = "<html><meta name=""viewport"" content=""width=device-width, initial-scale=1.0""><font size=5em font-family=sans-serif><form>" + note + "Welcome to the light alarm clock (19May2016 Version).<br><br>Time is " + String(startingHour) + ":" + String(startingMinute) + ":" + String(startingSecond) + " PDT (Valid Mar to Nov), which is an epoch of " + String(startingEpoch) + " seconds.<br><br> Please enter the wakeup time 30 mins before final alarm time.<p><input type=time name=JTime onchange=""this.form.submit()"" style=""height:50px; width:400px""></form></font></html>"; //</input><input type=submit> </input>
      Serial.println(htmlCode);
      client.println(htmlCode);
      Serial.println("Webpage sent.");
@@ -370,7 +406,7 @@ void loop() {
   }
 
   // Set GPIO5 according to the request
-  digitalWrite(5, val);
+//  digitalWrite(5, val);
 
   // Prepare the response
   String s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nGPIO is now ";

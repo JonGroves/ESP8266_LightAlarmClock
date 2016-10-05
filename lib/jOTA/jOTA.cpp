@@ -11,6 +11,7 @@ void OTAsetup() {
   Serial.println("Booting");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
+  //WiFi.config(IPAddress(192, 168, 2, 123),IPAddress(192,168,0,1),IPAddress(255,255,255,0)); //MIGHT work
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println("Connection Failed! Rebooting...");
     delay(5000);
@@ -34,6 +35,9 @@ void OTAsetup() {
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+      digitalWrite(2,LOW); //Turns on LED
+      delay(1);
+      digitalWrite(2,HIGH); //Turns off LED
   });
   ArduinoOTA.onError([](ota_error_t error) {
     Serial.printf("Error[%u]: ", error);

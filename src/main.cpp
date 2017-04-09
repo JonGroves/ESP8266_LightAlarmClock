@@ -4,8 +4,8 @@
  *    http://server_ip/gpio/1 will set the GPIO5 high
  *  server_ip is the IP address of the ESP8266 module, will be
  *  printed to Serial when the module is connected.
- *  Servo is attached to pin 4 currently
  */
+
 #include "main.h"
 
 
@@ -14,12 +14,12 @@
 void setup() {
   OTAsetup();
   OTAloopOnce();
-
+  setLEDIntensity(0);
   // Start the mDNS for the network (Doesn't work on android)
   MDNSConnect();
 
   // Start the websockets
-  Serial.print("Starting websockets...");
+  Serial.print("Starting websockets");
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
   Serial.println("Done!");
@@ -51,20 +51,25 @@ void setup() {
   alertWithLED(5,50,50);
   Serial.println("Done!");
 
-  Serial.print("Setting up and zeroing servo...");
-  // prepare GPIO for Servo as servoPin
-  pinMode(servoPin, OUTPUT);
-  digitalWrite(servoPin, 0);
-  // Attach servo to pin servoPin
-  myservo.attach(servoPin);
-  myservo.write(175);
-  delay(2000);
-  myservo.write(0);
-  delay(2000);  myservo.detach(); //Need to delay until the servo stops moving before detaching
+  Serial.print("Testing LEDs");
+  for(int led_counter=0; led_counter<=1024; led_counter++)
+  {
+    setLEDIntensity(led_counter);
+    delay(2);
+  }
+  for(int led_counter=1024; led_counter>=0; led_counter--)
+  {
+    setLEDIntensity(led_counter);
+    delay(2);
+  }
+  digitalWrite(PIN_RED, 0);
+  digitalWrite(PIN_BLUE, 0);
+  digitalWrite(PIN_GREEN, 0);
+
   Serial.println("Done!");
 
   Serial.println("Waiting for a client...");
-      Serial.println("This websocket loop really slows down transfering the js, css, and html files.  Not sure why, but look into it!");
+  Serial.println("This websocket loop really slows down transfering the js, css, and html files.  Not sure why, but look into it!");
 }
 
 // ___________________________________________________________________________
@@ -189,9 +194,9 @@ void loop() {
       Serial.println("JTimeHr: " + String(JTimeHr));
       Serial.println("JTimeMin: " + String(JTimeMin));
       Serial.println("Total timer duration: " + String(timerDuration));
-      Serial.println("Starting servo code...");
-      webSocket.broadcastTXT("Request is " + String(req) + ". JTimeHr: " + String(JTimeHr) + ". JTimeMin: " + String(JTimeMin) + ". Total timer duration: " + String(timerDuration) + ". Starting servo code...");
-      startServoCode(timerEndTime,timerEndHours,timerEndMinutes);
+      Serial.println("Starting LED code...");
+      webSocket.broadcastTXT("Request is " + String(req) + ". JTimeHr: " + String(JTimeHr) + ". JTimeMin: " + String(JTimeMin) + ". Total timer duration: " + String(timerDuration) + ". Starting LED code...");
+      startLEDCode(timerEndTime,timerEndHours,timerEndMinutes);
   }
 
   // Set GPIO5 according to the request
@@ -211,7 +216,12 @@ void loop() {
   // when the function returns and 'client' object is detroyed
 }
 
-
+void setLEDIntensity(int intensity)
+{
+  analogWrite(PIN_RED, intensity);
+  analogWrite(PIN_BLUE, intensity);
+  analogWrite(PIN_GREEN, intensity);
+}
 
 // ___________________________________________________________________________
 // WebSocket Events
@@ -263,12 +273,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
         if (text.startsWith("x")) {
           String xVal = (text.substring(text.indexOf("x") + 1, text.length()));
           int xInt = xVal.toInt();
-          if (!myservo.attached())
-          {
-            myservo.attach(servoPin);
-          }
-          myservo.write(xInt);
-          //analogWrite(REDPIN, xInt);
+
+          setLEDIntensity(xInt);
           //DEBUGGING(xVal);
           String message = "Manual to "+ String(xInt);
           //webSocket.sendTXT(num, message);
@@ -357,32 +363,23 @@ void alertWithLED(int numTimes, int onTimeMS, int offTimeMS)
 }
 
 // ___________________________________________________________________________
-void startServoCode(unsigned long timerEndTime, int timerEndHours, int timerEndMinutes) {
-  //***** Start of servo code ****
-                      Serial.println("Servo code started...");
-
-                      myservo.attach(servoPin);
-                      myservo.write(0);
-                      Serial.println("ServoValue=0");
-
+void startLEDCode(unsigned long timerEndTime, int timerEndHours, int timerEndMinutes) {
+  //***** Start of led code ****
+                      Serial.println("LED code started...");
                       Serial.println("Running test...");
-                      Serial.println("Warming up the lightbulb...");
-
-                      myservo.write(175);
-                      Serial.println("ServoValue=175");
-                      delay(1500);  //heat up light
-
                       Serial.println("Slowly turning up light (Quickly for testing)...");
-                      for(servoPos = 55; servoPos < 175; servoPos += 1 )  // goes from 0 degrees to 175 degrees
-                      {                                  // in steps of 1 degree
-                        myservo.write(servoPos);              // tell servo to go to position in variable 'pos'
-                        Serial.println("ServoValue=" + String(servoPos));
-                        delay(30);                       // waits 15ms for the servo to reach the position
+                      for(int ledSetpoint = 0; ledSetpoint <= 1024; ledSetpoint++)
+                      {
+                        setLEDIntensity(ledSetpoint);
+                        Serial.println("Intensity = " + String(ledSetpoint));
+                        delay(5);                       // waits 15ms
                       }
-                      myservo.write(0);
-                      delay (3000); myservo.detach(); //Waits 3 seconds before detaching so servo can finish moving.
-
-                      Serial.println("ServoValue=0");
+                      for(int ledSetpoint = 1024; ledSetpoint >= 0; ledSetpoint--)
+                      {
+                        setLEDIntensity(ledSetpoint);
+                        Serial.println("Intensity = " + String(ledSetpoint));
+                        delay(5);                       // waits 15ms
+                      }
 
                       Serial.println("Waiting " + String(timerEndHours) + " Hours and " + String(timerEndMinutes) + " minutes...");
                       Serial.println(String((timerEndTime - millis()) / 1000) + " seconds left");
@@ -392,6 +389,7 @@ void startServoCode(unsigned long timerEndTime, int timerEndHours, int timerEndM
                         unsigned long hoursLeft = (timerEndTime - millis()) / 1000 / 60 / 60;
                         unsigned long minutesLeft = ((timerEndTime - millis()) / 1000 / 60) - (hoursLeft * 60);
                         webSocket.broadcastTXT(String(hoursLeft) +" hours, " + String(minutesLeft) + " minutes left");
+                        //Blink the LED every second
                         digitalWrite(2,LOW); //Turns on LED
                         delay(1);
                         digitalWrite(2,HIGH); //Turns off LED
@@ -402,34 +400,21 @@ void startServoCode(unsigned long timerEndTime, int timerEndHours, int timerEndM
                      // delay(JTimeInMilliSec);  //25,200,000 = 7 hours, 30,600,000 = 8.5 hours, 23,400,000 = 6.5 hrs
 
 
-                      myservo.attach(servoPin);
-                      myservo.write(175);
-                      Serial.println("ServoValue=175");
-                      delay(1500);  //heat up light
-
-                      Serial.println("Warming up the lightbulb...");
-
-                      myservo.write(0);
-                      Serial.println("ServoValue=175");
-                      Serial.println("Slowly turning up light...");
-                      myservo.write(55);
-                      delay(2000) ; myservo.detach();
-                      for(servoPos = 55; servoPos < 175; servoPos += 1 )  // goes from 0 degrees to 180 degrees
-                      {                                  // in steps of 1 degree
-                          myservo.attach(servoPin);
-                          myservo.write(servoPos);              // tell servo to go to position in variable 'pos'
-                          delay(1000);  myservo.detach(); //Need to delay until the servo stops moving before detachin1
-
-                        Serial.println("ServoValue=" + String(servoPos));
-                        delay(13400);                       // waits 14.4seconds (minus the 1000ms before detaching) so that the light brightens over 30 mins (14.4*(180-55))
+                      Serial.println("Slowly turning up LEDs...");
+                      for(int ledSetpoint = 0; ledSetpoint <= 1024; ledSetpoint++)
+                      {
+                        setLEDIntensity(ledSetpoint);
+                        Serial.println("Intensity = " + String(ledSetpoint));
+                        delay(1758);   // waits 1758ms (1.758 seconds) so that the light brightens over 30 mins (30*60*1000/1024)
                         alertWithLED(1, 50, 0);
                       }
-                      Serial.println("Ending servo code and starting infinite loop.");
+
+                      Serial.println("Ending LED code and starting infinite loop.");
 
                       while(true)
                       {
                           OTAloopOnce();
-                          delay(1000);
+                          delay(10000);
                       }
 }
 

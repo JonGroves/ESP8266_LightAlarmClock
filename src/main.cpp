@@ -8,6 +8,8 @@
 
 #include "main.h"
 
+//Options:
+const bool getTimefromNTP = false;
 
 
 // ___________________________________________________________________________
@@ -15,11 +17,13 @@ void setup() {
   OTAsetup();
   OTAloopOnce();
   setLEDIntensity(0);
+
   // Start the mDNS for the network (Doesn't work on android)
   MDNSConnect();
 
+
   // Start the websockets
-  Serial.print("Starting websockets");
+  Serial.print("Starting websockets...");
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
   Serial.println("Done!");
@@ -68,26 +72,33 @@ void setup() {
 
   Serial.println("Done!");
 
-  Serial.println("Waiting for a client...");
+
   Serial.println("This websocket loop really slows down transfering the js, css, and html files.  Not sure why, but look into it!");
+  //Serial.println("IP of access point is " + WiFi.softAPIP());
+  //Serial.println("IP2 is " + WiFi.localIP());
+  //  Serial.println("Waiting for a client...");
 }
 
 // ___________________________________________________________________________
 void loop() {
+
   OTAloopOnce();
   // Check if a client has connected
+
   WiFiClient client = server.available();
   if (!client) {
     webSocket.loop();
-    return;
+    delay(1);
+    return; //Terminate a function and return a value from a function to the calling function, if desired.
   }
 
   // Wait until the client sends some data
   //Serial.println("Client connected");
+
   while(!client.available()){
     delay(1);
   }
-
+Serial.println("client found");
 //Fix slow sending of files from SPIFFS (https://github.com/esp8266/Arduino/issues/1853)
   client.setNoDelay(1); //about 3 times faster
 
@@ -98,87 +109,8 @@ void loop() {
 
   // Match the request
   int val;
-  if (req.indexOf("JTime=") == -1) {
-    int startIndex = req.indexOf(" ") + 1;
-    int endIndex = req.indexOf(" ",req.indexOf(" ")+1);
-    String pagePath = req.substring(startIndex, endIndex);
-    if (pagePath == "/")
-    {
-      pagePath = "/colors.html";
-    }
-     Serial.print("Sending " + pagePath + "...");
-     String note = "";
-     Dir dir = SPIFFS.openDir("/");
-     File file;
-     //String filepath = "/colors.html";
-     if(SPIFFS.exists(pagePath))
-     {
-       file = SPIFFS.open(pagePath, "r");
-     }
-     if (!file) {
-       Serial.print("\nERROR: " + pagePath + " not found or failed to open.");
-     }
-
-     if (pagePath.indexOf(".html") == -1) //ie not an html file
-     {
-       while (file.available())
-       {
-         size_t bufferLength = 2048;  //Bigger is MUCH faster (2048 is about 5x faster than 1024), but bigger than this usually causes the esp8266 to crash (our of memory).
-         char buffer[bufferLength];
-         size_t lengthOfBufferUsed = file.readBytes(buffer, bufferLength);
-         yield();
-         client.write(buffer,lengthOfBufferUsed);
-       }
-         client.flush();
-     }
-     else
-     {
-       String htmlCode = "";
-       //file.setTimeout(5000);
-       while (file.peek() != -1)
-       {
-        htmlCode += file.readStringUntil('\r');
-         yield();
-       }
-       if (htmlCode.indexOf("String(startingHour)") != -1)
-       {
-              getCurrentNTPTime(startingEpoch,startingHour,startingMinute,startingSecond);
-       }
-       htmlCode.replace("String(note)",note);
-       htmlCode.replace("String(startingHour)",String(startingHour));
-       htmlCode.replace("String(startingMinute)",String(startingMinute));
-       htmlCode.replace("String(startingSecond)",String(startingSecond));
-       htmlCode.replace("String(startingEpoch)",String(startingEpoch));
-      // int htmlCodeLength = htmlCode.length() + 1; //+1 for null terminator
-      // char htmlCodeCharArray[htmlCodeLength];
-    //   htmlCode.toCharArray(htmlCodeCharArray, htmlCodeLength);
-    //   const char * htmlCodeCharArray = htmlCode.c_str();
-
-      //Sending data  in chucks overrides the small buffer and timeout of sending data as one string
-      for(int startOfChunk = 0; startOfChunk < htmlCode.length(); startOfChunk += 2048)
-      {
-        int endOfChunk = startOfChunk + 2048;
-        //Serial.println("Sending chars " + String(startOfChunk) + " to " + String(endOfChunk) + " of " + String(htmlCode.length()));
-        if (endOfChunk > htmlCode.length())
-        {
-          endOfChunk = htmlCode.length();
-        }
-
-        client.print(htmlCode.substring(startOfChunk,endOfChunk));
-        client.flush();
-        yield();
-      }
-    }
-
-
-     //Serial.println(htmlCode);
-     Serial.println("Done!");
-     client.flush();
-     //client.stop();
-
-     return;
-  }
-  else {
+  if (req.indexOf("JTime=") != -1)  //JTime was specified
+  {
       Serial.println("Reading JTime string...");
       webSocket.broadcastTXT("Reading JTime string...");
       int StartCharIndex = req.indexOf("JTime=");
@@ -193,10 +125,125 @@ void loop() {
       Serial.println("Request is " + String(req));
       Serial.println("JTimeHr: " + String(JTimeHr));
       Serial.println("JTimeMin: " + String(JTimeMin));
-      Serial.println("Total timer duration: " + String(timerDuration));
+      Serial.println("Total timer duration: " + String(timerDuration) + " seconds.");
+      Serial.println("Turning off wifi");
+      WiFi.mode(WIFI_OFF);
       Serial.println("Starting LED code...");
-      webSocket.broadcastTXT("Request is " + String(req) + ". JTimeHr: " + String(JTimeHr) + ". JTimeMin: " + String(JTimeMin) + ". Total timer duration: " + String(timerDuration) + ". Starting LED code...");
-      startLEDCode(timerEndTime,timerEndHours,timerEndMinutes);
+      Serial.flush();
+      webSocket.broadcastTXT("Request is " + String(req) + ". JTimeHr: " + String(JTimeHr) + ". JTimeMin: " + String(JTimeMin) + ". Total timer duration: " + String(timerDuration) + " seconds. Starting LED code...");
+
+      startLEDCodeOld(timerEndTime,timerEndHours,timerEndMinutes);
+  }
+  else if (req.indexOf("JCurrentTime=") != -1)  //JCurrentTime was specified (ie. setting the current time by hand)
+  {
+    String tempString = "JCurrentTime=";
+    int StartCharIndex = req.indexOf(tempString);
+    startingHour = req.substring(StartCharIndex + tempString.length(),StartCharIndex + tempString.length() + 2).toInt();
+    startingMinute = req.substring(StartCharIndex + tempString.length() + 5,StartCharIndex + tempString.length() + 5 + 2).toInt();
+    startingSecond=0; //not required
+    startingEpoch=0;  //not required
+    //setTime(startingMinute,startingMinute,startingSecond,0,0,0);  //Set current time // setTime(hr,min,sec,day,month,yr);
+  }
+  else
+  {
+    Serial.println("Client found");
+    int startIndex = req.indexOf(" ") + 1;
+    int endIndex = req.indexOf(" ",req.indexOf(" ")+1);
+    String pagePath = req.substring(startIndex, endIndex);
+    if (pagePath == "/")
+    {
+      Serial.print("Sending html...");
+      pagePath = "/colors.html";
+      Serial.println("Done!");
+    }
+    Serial.print("Sending " + pagePath + "...");
+    String note = "Set time as 12:01AM for 1 minute in the future.  8:00 AM for 8 hours into the future etc.  Be sure to connect first to websockets for control.";
+    Dir dir = SPIFFS.openDir("/");
+    File file;
+    //String filepath = "/colors.html";
+    if(SPIFFS.exists(pagePath))
+    {
+      file = SPIFFS.open(pagePath, "r");
+    }
+    if (!file) {
+      Serial.print("\nERROR: " + pagePath + " not found or failed to open.");
+    }
+
+    if (pagePath.indexOf(".html") == -1) //ie not an html file
+    {
+      while (file.available())
+      {
+        size_t bufferLength = 2048;  //Bigger is MUCH faster (2048 is about 5x faster than 1024), but bigger than this usually causes the esp8266 to crash (our of memory).
+        char buffer[bufferLength];
+        size_t lengthOfBufferUsed = file.readBytes(buffer, bufferLength);
+        yield();
+        client.write(buffer,lengthOfBufferUsed);
+      }
+        client.flush();
+    }
+    else
+    {
+      String htmlCode = "";
+      //file.setTimeout(5000);
+      while (file.peek() != -1)
+      {
+       htmlCode += file.readStringUntil('\r');
+        yield();
+      }
+      if (htmlCode.indexOf("String(startingHour)") != -1)
+      {
+        if (getTimefromNTP)
+        {
+          Serial.print("Getting current time from NTP Servers ... ");
+          bool NTPSucceeded = getCurrentNTPTime(startingEpoch,startingHour,startingMinute,startingSecond);
+          Serial.println( NTPSucceeded ? "succeeded" : "failed, but that's ok.");
+          if (!NTPSucceeded)
+          {
+            startingHour=0;
+            startingMinute=0;
+            startingSecond=0;
+            startingEpoch=0;
+          }
+        }
+        else
+        {
+          Serial.print("Skipping getting current time from NTP Servers.");
+        }
+
+      }
+      htmlCode.replace("String(note)",note);
+      htmlCode.replace("String(startingHour)",String(startingHour));
+      htmlCode.replace("String(startingMinute)",String(startingMinute));
+      htmlCode.replace("String(startingSecond)",String(startingSecond));
+      htmlCode.replace("String(startingEpoch)",String(startingEpoch));
+     // int htmlCodeLength = htmlCode.length() + 1; //+1 for null terminator
+     // char htmlCodeCharArray[htmlCodeLength];
+   //   htmlCode.toCharArray(htmlCodeCharArray, htmlCodeLength);
+   //   const char * htmlCodeCharArray = htmlCode.c_str();
+
+     //Sending data  in chucks overrides the small buffer and timeout of sending data as one string
+     for(int startOfChunk = 0; startOfChunk < htmlCode.length(); startOfChunk += 2048)
+     {
+       int endOfChunk = startOfChunk + 2048;
+       //Serial.println("Sending chars " + String(startOfChunk) + " to " + String(endOfChunk) + " of " + String(htmlCode.length()));
+       if (endOfChunk > htmlCode.length())
+       {
+         endOfChunk = htmlCode.length();
+       }
+
+       client.print(htmlCode.substring(startOfChunk,endOfChunk));
+       client.flush();
+       yield();
+     }
+   }
+
+
+    //Serial.println(htmlCode);
+    Serial.println("Done!");
+    client.flush();
+    //client.stop();
+
+    return;
   }
 
   // Set GPIO5 according to the request
@@ -265,7 +312,15 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
           int tempHour = 0;
           int tempMinute = 0;
           int tempSecond = 0;
-          getCurrentNTPTime(tempEpoch,tempHour,tempMinute,tempSecond);
+          if(getTimefromNTP)
+          {
+            Serial.print("Getting current time from NTP Servers ... ");
+            getCurrentNTPTime(tempEpoch,tempHour,tempMinute,tempSecond);
+          }
+          else
+          {
+            Serial.print("Skipping getting current time from NTP Servers.");
+          }
           String timeMessage = "Time Message: " + String(tempHour) + ":" + String(tempMinute) + ":" + String(tempSecond); //Will be filtered and not overwrite the normal broadcast message due to "Time Message:"
           webSocket.broadcastTXT("Time Message: " + timeMessage);
         }
@@ -337,15 +392,13 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 // ___________________________________________________________________________
 void MDNSConnect() {
   //NOTE: the MDNS works, but android can't handle mdns.  Try from a computer
-  if (!MDNS.begin("JLightAlarm")) {
-   Serial.println("Error setting up MDNS responder!");
-    while (1) {
-      delay(1000);
-    }
-  }
-  Serial.println("mDNS responder started");
+  Serial.print("Setting up MDNS (Only accessible from computer) ... ");
+  Serial.println(MDNS.begin("JLightAlarm") ? "succeeded" : "failed!");
+
+  Serial.print("Adding MDNS websockets and http ports ... ");
   MDNS.addService("ws", "tcp", 81);
   MDNS.addService("http", "tcp", 80);
+  Serial.println("Done");
 }
 
 // ___________________________________________________________________________
@@ -362,8 +415,9 @@ void alertWithLED(int numTimes, int onTimeMS, int offTimeMS)
   }
 }
 
+//Note: ctrl+/ comments and uncomments quickly
 // ___________________________________________________________________________
-void startLEDCode(unsigned long timerEndTime, int timerEndHours, int timerEndMinutes) {
+void startLEDCodeOld(unsigned long timerEndTime, int timerEndHours, int timerEndMinutes) {
   //***** Start of led code ****
                       Serial.println("LED code started...");
                       Serial.println("Running test...");
@@ -382,8 +436,8 @@ void startLEDCode(unsigned long timerEndTime, int timerEndHours, int timerEndMin
                       }
 
                       Serial.println("Waiting " + String(timerEndHours) + " Hours and " + String(timerEndMinutes) + " minutes...");
-                      Serial.println(String((timerEndTime - millis()) / 1000) + " seconds left");
-                      Serial.println("Hopefully, " + String(timerEndTime) + "is greater than " + String(millis()/1000));
+                      //Serial.println(String((timerEndTime - millis()) / 1000) + " seconds left");
+                      //Serial.println("Hopefully, " + String(timerEndTime) + "is greater than " + String(millis()/1000));
                       while (timerEndTime > (millis()/1000)) {
                         Serial.println(String(timerEndTime - (millis() / 1000)) + " seconds left");
                         unsigned long hoursLeft = (timerEndTime - millis()) / 1000 / 60 / 60;
@@ -514,7 +568,7 @@ unsigned long sendNTPpacket(IPAddress& address)
 }
 
 // ___________________________________________________________________________
-void getCurrentNTPTime(unsigned long &currentEpoch, int &currentHour, int &currentMinute, int &currentSecond) {
+bool getCurrentNTPTime(unsigned long &currentEpoch, int &currentHour, int &currentMinute, int &currentSecond) {
   //get a random server from the pool
   WiFi.hostByName(ntpServerName, timeServerIP);
 
@@ -524,7 +578,8 @@ void getCurrentNTPTime(unsigned long &currentEpoch, int &currentHour, int &curre
 
   int cb = udp.parsePacket();
   if (!cb) {
-    Serial.println("no packet yet");
+    Serial.println("no packet received.  Returning false.");
+    return false;
   }
   else {
     Serial.print("packet received, length=");
@@ -559,5 +614,7 @@ void getCurrentNTPTime(unsigned long &currentEpoch, int &currentHour, int &curre
     currentMinute = (epoch  % 3600) / 60; // the minute (3600 equals secs per minute)
     currentSecond = epoch % 60; // the second
     Serial.println("The UTC time is " + String(currentHour) + ":" + String(currentMinute) + ":" + String(currentSecond));       // UTC is the time at Greenwich Meridian (GMT)
+
+    return true;
   }
 }

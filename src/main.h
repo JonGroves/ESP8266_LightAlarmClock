@@ -9,7 +9,7 @@
  */
  //Updated on 19May2016 to have LED indicator, clean up servo pin numbers, verified it works with esp8266, detach servos when not in use, clean up html code
   //Updated on 8Apr2017 to replace servo with LED MOSFET code
-  
+
 #include <ESP8266WiFi.h>
 #include <Servo.h>
 #include <WiFiUdp.h>
@@ -19,6 +19,9 @@
 #include <Stream.h>
 #include "jOTA.h"
 #include "WebSocketsServer.h"
+#include <Hash.h> //Required for websockets
+#include <DNSServer.h>
+#include <time.h>
 
 int PIN_RED = 12; //IO12, Pin10
 int PIN_GREEN = 14; //IO14, Pin9
@@ -66,9 +69,11 @@ void loop();
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length);
 void MDNSConnect();
 void alertWithLED(int numTimes, int onTimeMS, int offTimeMS);
-void startLEDCode(unsigned long timerEndTime, int timerEndHours, int timerEndMinutes);
+void startLEDCodeOld(unsigned long timerEndTime, int timerEndHours, int timerEndMinutes);
+//void startLEDCode(unsigned long timerEndTime, int timerEndHours, int timerEndMinutes);
+
 void getWebsite(String serverUrl, String websiteURL);
 // send an NTP request to the time server at the given address
 unsigned long sendNTPpacket(IPAddress& address);
-void getCurrentNTPTime(unsigned long &currentEpoch, int &currentHour, int &currentMinute, int &currentSecond);
+bool getCurrentNTPTime(unsigned long &currentEpoch, int &currentHour, int &currentMinute, int &currentSecond);
 void setLEDIntensity(int intensity);

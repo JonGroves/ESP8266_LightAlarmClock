@@ -2,21 +2,63 @@
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
+#include <DNSServer.h>
 
-const char* ssid = "********";
-const char* password = "ilovegreeneggsandham912803785345";
+//Options:
+const bool createAccessPoint = true;
+const char* ssid = "TELUS1846";
+const char* password = "publicspasswordia";
+const byte DNS_PORT = 53;
+const IPAddress apIP(192, 168, 1, 1);
+
+//Globals:
+DNSServer dnsServer;
 
 void OTAsetup() {
   Serial.begin(115200);
   Serial.println("Booting");
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  //WiFi.config(IPAddress(192, 168, 2, 123),IPAddress(192,168,0,1),IPAddress(255,255,255,0)); //MIGHT work
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("Connection Failed! Rebooting...");
-    delay(5000);
-    ESP.restart();
+  Serial.println(String(createAccessPoint));
+
+  if (createAccessPoint == true)
+  {
+    WiFi.mode(WIFI_AP); //Access point
+
+    Serial.print("Configuring access point ... ");
+    Serial.println(WiFi.softAPConfig(apIP, apIP, IPAddress(255,255,255,0))  ? "succeeded" : "failed!");
+
+    Serial.print("Creating access point ... ");
+    //Serial.println(WiFi.begin(ssid, password) ? "succeeded" : "failed!");
+    Serial.println(WiFi.softAP(ssid, password) ? "succeeded" : "failed!");
+    Serial.println("If the ip is 0.0.0.0, likely's it's actually 192.168.1.1");
+
+//https://github.com/esp8266/Arduino/blob/4897e0006b5b0123a2fa31f67b14a3fff65ce561/libraries/DNSServer/examples/DNSServer/DNSServer.ino
+
+/*
+    dnsServer.setTTL(300);
+    dnsServer.setErrorReplyCode(DNSReplyCode::ServerFailure);
+    dnsServer.start(DNS_PORT, "*", apIP);
+
+    dnsServer.processNextRequest();
+    */
+
+    Serial.println("SSID 'TELUS1846', Password: 'publics***' created");
+    Serial.println("IP of access point is " + WiFi.softAPIP());
+    //Serial.println("IP of Esp8266 is " + WiFi.localIP());
   }
+  else
+  {
+
+    Serial.println("Looking for SSID 'TELUS1846', Password: 'publics***'");
+    WiFi.begin(ssid, password);
+    //Wait for connection to complete
+    while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+      Serial.println("Connection Failed! Rebooting...");
+      delay(5000);
+      ESP.restart();
+    }
+    Serial.println("IP of Esp8266 is " + WiFi.localIP());
+  }
+
 
   // Port defaults to 8266
   // ArduinoOTA.setPort(8266);

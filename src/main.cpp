@@ -10,8 +10,9 @@
 
 //Options:
 const bool getTimefromNTP = false;
-
-
+const int wakeupDuration = 30; //in minutes
+int ledIntensityArray[] = {0,0,0};
+//const int timeZoneOffset = -8*60*60
 // ___________________________________________________________________________
 void setup() {
   OTAsetup();
@@ -55,16 +56,26 @@ void setup() {
   alertWithLED(5,50,50);
   Serial.println("Done!");
 
+  analogWrite(PIN_RED,1); //Sets them as output //Writing 0 doesn't set them as outputs
+  analogWrite(PIN_GREEN,1);//Sets them as output
+  analogWrite(PIN_BLUE,1);//Sets them as output
+
   Serial.print("Testing LEDs");
   for(int led_counter=0; led_counter<=1024; led_counter++)
   {
-    setLEDIntensity(led_counter);
-    delay(2);
+    brightnessCurve(led_counter,ledIntensityArray); //Calculate the ledIntensityArray and have these values edited
+    //Serial.println(String(ledIntensityArray[0])+"|"+String(ledIntensityArray[1])+"|"+String(ledIntensityArray[2]));
+    setLEDIntensity(ledIntensityArray); //Pass the ledIntensityArray to the setLEDIntensity function
+    //setLEDIntensity(led_counter);
+    delay(1);
   }
   for(int led_counter=1024; led_counter>=0; led_counter--)
   {
-    setLEDIntensity(led_counter);
-    delay(2);
+    brightnessCurve(led_counter,ledIntensityArray); //Calculate the ledIntensityArray and have these values edited
+    //Serial.println(String(ledIntensityArray[0])+"|"+String(ledIntensityArray[1])+"|"+String(ledIntensityArray[2]));
+    setLEDIntensity(ledIntensityArray); //Pass the ledIntensityArray to the setLEDIntensity function
+    //setLEDIntensity(led_counter);
+    delay(1);
   }
   digitalWrite(PIN_RED, 0);
   digitalWrite(PIN_BLUE, 0);
@@ -73,7 +84,7 @@ void setup() {
   Serial.println("Done!");
 
 
-  Serial.println("This websocket loop really slows down transfering the js, css, and html files.  Not sure why, but look into it!");
+  //Serial.println("This websocket loop really slows down transfering the js, css, and html files.  Not sure why, but look into it!");
   //Serial.println("IP of access point is " + WiFi.softAPIP());
   //Serial.println("IP2 is " + WiFi.localIP());
   //  Serial.println("Waiting for a client...");
@@ -116,23 +127,41 @@ Serial.println("client found");
       int StartCharIndex = req.indexOf("JTime=");
       int JTimeHr = req.substring(StartCharIndex + 6,StartCharIndex + 8).toInt();
       int JTimeMin = req.substring(StartCharIndex + 11,StartCharIndex + 13).toInt();
-      int timerEndHours = long((24 + double(JTimeHr) + double(JTimeMin)/60)-(double(startingHour) + double(startingMinute)/60)) % 24;
-      int timerEndMinutes = long(60 + JTimeMin - startingMinute) % 60;
-      unsigned long timerDuration =  timerEndHours * 3600 + timerEndMinutes * 60;
-      unsigned long timerEndTime = long(millis()/1000) + timerDuration;  //https://www.arduino.cc/en/reference/millis
-      //long JTimeInMilliSec = JTimeHr * 3600000 + JTimeMin * 60000; //25,200,000 = 7 hours, 30,600,000 = 8.5 hours, 23,400,000 = 6.5 hrs
-      //unsigned long endEpoch = startingEpoch + JTimeInMilliSec/1000;
+      //int timerEndHours = long((24 + double(JTimeHr) + double(JTimeMin)/60)-(double(startingHour) + double(startingMinute)/60)) % 24;
+      //int timerEndMinutes = long(60 + JTimeMin - startingMinute) % 60;
+
+      //Calculate time until alarm time by setting the alarm time as the time, finding the epoch, changing the time back, and calculating the differece in seconds
+      unsigned long currentTime = now();
+      adjustTime(12*60*60); //Add 12 hours so the day will be right when we set the time (ie. for tomorrow)
+      //int currentMinute = minute();
+      //int currentHour = hour();
+      int timerDay = day();
+      int timerMonth = month();
+      int timerYear = year();
+
+      setTime(JTimeHr,JTimeMin,0,timerDay,timerMonth,timerYear); //Temporarility sets the time to the wakeup time to get the epoch
+      adjustTime(-1*wakeupDuration*60); //Subtract 30 minutes so you set the alarm time, not the when the light alarm starts
+      unsigned long alarmTime = now();//get the epoch of the wake up time
+      setTime(currentTime);//Set the time back
+
+      long timerDuration = alarmTime - currentTime;
+      if (timerDuration<0 || timerDuration>11*60*60)  //Make sure timer is within 11 hours, else start now to show it messed up
+      {
+        timerDuration=0;
+      }
+      Serial.println("currenttime:" + String(currentTime) +", alarmTime:" + String(alarmTime));
+
       Serial.println("Request is " + String(req));
       Serial.println("JTimeHr: " + String(JTimeHr));
       Serial.println("JTimeMin: " + String(JTimeMin));
       Serial.println("Total timer duration: " + String(timerDuration) + " seconds.");
-      Serial.println("Turning off wifi");
-      WiFi.mode(WIFI_OFF);
+      //Serial.println("Turning off wifi");
+      //WiFi.mode(WIFI_OFF);
       Serial.println("Starting LED code...");
       Serial.flush();
       webSocket.broadcastTXT("Request is " + String(req) + ". JTimeHr: " + String(JTimeHr) + ". JTimeMin: " + String(JTimeMin) + ". Total timer duration: " + String(timerDuration) + " seconds. Starting LED code...");
 
-      startLEDCodeOld(timerEndTime,timerEndHours,timerEndMinutes);
+      startLEDCode(timerDuration);
   }
   else if (req.indexOf("JCurrentTime=") != -1)  //JCurrentTime was specified (ie. setting the current time by hand)
   {
@@ -153,7 +182,7 @@ Serial.println("client found");
     if (pagePath == "/")
     {
       Serial.print("Sending html...");
-      pagePath = "/colors.html";
+      pagePath = "/index.html";
       Serial.println("Done!");
     }
     Serial.print("Sending " + pagePath + "...");
@@ -266,13 +295,28 @@ Serial.println("client found");
 void setLEDIntensity(int intensity)
 {
   analogWrite(PIN_RED, intensity);
-  analogWrite(PIN_BLUE, intensity);
   analogWrite(PIN_GREEN, intensity);
+  analogWrite(PIN_BLUE, intensity);
 }
 
+void setLEDIntensity(int RedInt, int GreenInt, int BlueInt)
+{
+  analogWrite(PIN_RED, RedInt);
+  analogWrite(PIN_GREEN, GreenInt);
+  analogWrite(PIN_BLUE, BlueInt);
+}
+
+void setLEDIntensity(int intensityArray[])
+{
+  analogWrite(PIN_RED, intensityArray[0]);
+  analogWrite(PIN_GREEN, intensityArray[1]);
+  analogWrite(PIN_BLUE, intensityArray[2]);
+}
 // ___________________________________________________________________________
 // WebSocket Events
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+  Serial.println("something received");
+  Serial.flush();
   digitalWrite(2,LOW); //Turns on LED
   delay(1);
   digitalWrite(2,HIGH); //Turns off LED
@@ -298,6 +342,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
         String text = String((char *) &payload[0]);
         Serial.println(text);
         Serial.flush();
+
         if (text == "LED") {
           digitalWrite(13, HIGH);
           delay(500);
@@ -306,7 +351,6 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
           //webSocket.sendTXT(num, "led just lit", length);
           webSocket.broadcastTXT("led just lit");
         }
-
         if (text.startsWith("getNTP")) {
           unsigned long tempEpoch = 0;
           int tempHour = 0;
@@ -324,16 +368,43 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
           String timeMessage = "Time Message: " + String(tempHour) + ":" + String(tempMinute) + ":" + String(tempSecond); //Will be filtered and not overwrite the normal broadcast message due to "Time Message:"
           webSocket.broadcastTXT("Time Message: " + timeMessage);
         }
-
-        if (text.startsWith("x")) {
-          String xVal = (text.substring(text.indexOf("x") + 1, text.length()));
-          int xInt = xVal.toInt();
-
-          setLEDIntensity(xInt);
+        if (text.startsWith("CurrentTime_SET|")) {
+          //Get Time (in seconds)
+          int startIndex1 = text.indexOf("|",1)+1;
+          int endIndex1 = text.indexOf("|",startIndex1);
+          int endIndexAdjusted1 = endIndex1-3;//cut off milliseconds with the "-3"
+          //Get Timezone offset (in minutes)
+          int startIndex2 = text.indexOf("|",endIndex1)+1;
+          int endIndex2 = text.length();
+          time_t tempEpoch = (unsigned long)((text.substring(startIndex1,endIndexAdjusted1).toInt())) - (unsigned long)(text.substring(startIndex2,endIndex2).toInt())*60; //8hrs for PST (Nov-Mar)
+          //unsigned long tempEpoch2 = (unsigned long)(text.substring(endIndex-5,endIndex).toInt()) + ((unsigned long)(text.substring(startIndex,endIndex-5)).toInt())*10000;
+          setTime(tempEpoch);
+          Serial.println("tempepoch:"+ String(tempEpoch));
+          //Serial.println("tempepoch2:"+ String(tempEpoch2));
+          String timeMessage = "Time Message: " + String(hour()) + ":" + String(minute()) + ":" + String(second()); //Will be filtered and not overwrite the normal broadcast message due to "Time Message:"
+          webSocket.broadcastTXT("Time Message: " + timeMessage);
+          Serial.println("Time Message: " + timeMessage);
+        }
+        if (text.startsWith("RGB_SET|")) {
+          //Red
+          int startIndex = text.indexOf("|",1)+1;
+          int endIndex = text.indexOf("|",startIndex);
+          int RedInt = (text.substring(startIndex, endIndex)).toInt();
+          //Green
+          startIndex = text.indexOf("|",endIndex)+1;
+          endIndex = text.indexOf("|",startIndex);
+          int GreenInt = (text.substring(startIndex, endIndex)).toInt();
+          //Blue
+          startIndex = text.indexOf("|",endIndex)+1;
+          endIndex = text.length();
+          int BlueInt = (text.substring(startIndex, endIndex)).toInt();
+          //Set
+          setLEDIntensity(RedInt,GreenInt,BlueInt);
           //DEBUGGING(xVal);
-          String message = "Manual to "+ String(xInt);
+          String message = text;
           //webSocket.sendTXT(num, message);
-          webSocket.broadcastTXT(message);
+          //webSocket.broadcastTXT(message);
+          //webSocket.broadcastTXT("|" + String(RedInt) + "|" + String(GreenInt) + "|" + String(BlueInt) + "|");
         }
 
         /*
@@ -417,37 +488,66 @@ void alertWithLED(int numTimes, int onTimeMS, int offTimeMS)
 
 //Note: ctrl+/ comments and uncomments quickly
 // ___________________________________________________________________________
-void startLEDCodeOld(unsigned long timerEndTime, int timerEndHours, int timerEndMinutes) {
+void startLEDCode(unsigned long timerDuration) {
   //***** Start of led code ****
                       Serial.println("LED code started...");
                       Serial.println("Running test...");
                       Serial.println("Slowly turning up light (Quickly for testing)...");
                       for(int ledSetpoint = 0; ledSetpoint <= 1024; ledSetpoint++)
                       {
-                        setLEDIntensity(ledSetpoint);
-                        Serial.println("Intensity = " + String(ledSetpoint));
+                        brightnessCurve(ledSetpoint,ledIntensityArray); //Calculate the ledIntensityArray and have these values edited
+                        //Serial.println(String(ledIntensityArray[0])+"|"+String(ledIntensityArray[1])+"|"+String(ledIntensityArray[2]));
+                        setLEDIntensity(ledIntensityArray); //Pass the ledIntensityArray to the setLEDIntensity function
+                        //setLEDIntensity(ledSetpoint);
+                        //Serial.println("Intensity = " + String(ledSetpoint));
                         delay(5);                       // waits 15ms
                       }
                       for(int ledSetpoint = 1024; ledSetpoint >= 0; ledSetpoint--)
                       {
-                        setLEDIntensity(ledSetpoint);
-                        Serial.println("Intensity = " + String(ledSetpoint));
+                        brightnessCurve(ledSetpoint,ledIntensityArray); //Calculate the ledIntensityArray and have these values edited
+                        //Serial.println(String(ledIntensityArray[0])+"|"+String(ledIntensityArray[1])+"|"+String(ledIntensityArray[2]));
+                        setLEDIntensity(ledIntensityArray); //Pass the ledIntensityArray to the setLEDIntensity function
+                        //setLEDIntensity(ledSetpoint);
+                        //Serial.println("Intensity = " + String(ledSetpoint));
                         delay(5);                       // waits 15ms
                       }
 
-                      Serial.println("Waiting " + String(timerEndHours) + " Hours and " + String(timerEndMinutes) + " minutes...");
-                      //Serial.println(String((timerEndTime - millis()) / 1000) + " seconds left");
-                      //Serial.println("Hopefully, " + String(timerEndTime) + "is greater than " + String(millis()/1000));
-                      while (timerEndTime > (millis()/1000)) {
-                        Serial.println(String(timerEndTime - (millis() / 1000)) + " seconds left");
-                        unsigned long hoursLeft = (timerEndTime - millis()) / 1000 / 60 / 60;
-                        unsigned long minutesLeft = ((timerEndTime - millis()) / 1000 / 60) - (hoursLeft * 60);
-                        webSocket.broadcastTXT(String(hoursLeft) +" hours, " + String(minutesLeft) + " minutes left");
+
+                      int hoursLeft = (int)(timerDuration / 60 / 60);
+                      int minutesLeft = (int)((timerDuration / 60 ) - (hoursLeft * 60));
+                      int secondsLeft;
+                      Serial.println("Waiting " + String(hoursLeft) + " Hours and " + String(minutesLeft) + " minutes...");
+                      //Serial.println(String((timerDuration - millis()) / 1000) + " seconds left");
+                      //Serial.println("Hopefully, " + String(timerDuration) + "is greater than " + String(millis()/1000));
+                      String lastStringSent="";
+                      String currentString;
+                      while (timerDuration > (millis()/1000)) {
+                        String currentString = String(timerDuration - (millis() / 1000));
+                        if (lastStringSent != currentString)
+                        {
+                          //Serial.println(String(timerDuration - (millis() / 1000)) + " seconds left");
+                          webSocket.broadcastTXT(String(hoursLeft) +" hours, " + String(minutesLeft) + " minutes, " + String(secondsLeft) + " seconds left");
+                          lastStringSent = currentString;
+                        }
+
+                        hoursLeft    = (int)((timerDuration - (millis() / 1000)) / 60 / 60);
+                        minutesLeft = (int)(((timerDuration - (millis() / 1000)) / 60 ) - (hoursLeft * 60));
+                        secondsLeft  = (int)((timerDuration - (millis() / 1000)) - (hoursLeft * 60 * 60) - (minutesLeft * 60));
+
                         //Blink the LED every second
-                        digitalWrite(2,LOW); //Turns on LED
-                        delay(1);
-                        digitalWrite(2,HIGH); //Turns off LED
-                        delay(1000);
+                        //digitalWrite(2,LOW); //Turns on LED
+                        //delay(1);
+                        //digitalWrite(2,HIGH); //Turns off LED
+                        delay(200);
+                        if (hoursLeft>24)
+                        {
+                          //Blink the LED 10 times per second forever
+                          digitalWrite(2,LOW); //Turns on LED
+                          delay(1);
+                          digitalWrite(2,HIGH); //Turns off LED
+                          delay(100);
+                          Serial.println("Time was wrong.  I'm in an endless loop forever now");
+                        }
                       }
 
 
@@ -455,12 +555,15 @@ void startLEDCodeOld(unsigned long timerEndTime, int timerEndHours, int timerEnd
 
 
                       Serial.println("Slowly turning up LEDs...");
+                      float incrementalTime = wakeupDuration*60*1000/1024;
                       for(int ledSetpoint = 0; ledSetpoint <= 1024; ledSetpoint++)
                       {
-                        setLEDIntensity(ledSetpoint);
-                        Serial.println("Intensity = " + String(ledSetpoint));
-                        delay(1758);   // waits 1758ms (1.758 seconds) so that the light brightens over 30 mins (30*60*1000/1024)
-                        alertWithLED(1, 50, 0);
+                        brightnessCurve(ledSetpoint,ledIntensityArray); //Calculate the ledIntensityArray and have these values edited
+                        //Serial.println(String(ledIntensityArray[0])+"|"+String(ledIntensityArray[1])+"|"+String(ledIntensityArray[2]));
+                        setLEDIntensity(ledIntensityArray); //Pass the ledIntensityArray to the setLEDIntensity function
+                        //Serial.println("Intensity = " + String(ledSetpoint));
+                        delay(incrementalTime);   // waits 1758ms (1.758 seconds) so that the light brightens over 30 mins (30*60*1000/1024)
+                        //alertWithLED(1, 50, 0);
                       }
 
                       Serial.println("Ending LED code and starting infinite loop.");
@@ -470,6 +573,13 @@ void startLEDCodeOld(unsigned long timerEndTime, int timerEndHours, int timerEnd
                           OTAloopOnce();
                           delay(10000);
                       }
+}
+void brightnessCurve(int timeIndex, int ledSetpointArray[])
+{
+  ledSetpointArray[0] = min(max((int)(pow((double)timeIndex,(double)1.2)),0),1024);
+  ledSetpointArray[1] = min(max((int)(pow(max((double)timeIndex-250,0),(double)1.2)),0),1024);
+  ledSetpointArray[2] = min(max((int)(pow(max((double)timeIndex-480,0),(double)1.1)),0),1024);
+  //=MAX(MIN(ROUND(($A3)^1.2,0),1024),0)  =MAX(MIN(ROUND(($A3-250)^1.2,0),1024),0) =MAX(MIN(ROUND(($A3-480)^1.1,0),1024),0)
 }
 
 // ___________________________________________________________________________

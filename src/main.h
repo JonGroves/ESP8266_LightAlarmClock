@@ -21,7 +21,8 @@
 #include "WebSocketsServer.h"
 #include <Hash.h> //Required for websockets
 #include <DNSServer.h>
-#include <time.h>
+#include "Time.h"
+#include "TimeLib.h"
 
 int PIN_RED = 12; //IO12, Pin10
 int PIN_GREEN = 14; //IO14, Pin9
@@ -69,7 +70,7 @@ void loop();
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length);
 void MDNSConnect();
 void alertWithLED(int numTimes, int onTimeMS, int offTimeMS);
-void startLEDCodeOld(unsigned long timerEndTime, int timerEndHours, int timerEndMinutes);
+void startLEDCode(unsigned long timerDuration);
 //void startLEDCode(unsigned long timerEndTime, int timerEndHours, int timerEndMinutes);
 
 void getWebsite(String serverUrl, String websiteURL);
@@ -77,3 +78,6 @@ void getWebsite(String serverUrl, String websiteURL);
 unsigned long sendNTPpacket(IPAddress& address);
 bool getCurrentNTPTime(unsigned long &currentEpoch, int &currentHour, int &currentMinute, int &currentSecond);
 void setLEDIntensity(int intensity);
+void setLEDIntensity(int RedInt, int GreenInt, int BlueInt);
+void brightnessCurve(int timeIndex, int ledSetpointArray[]);
+void setLEDIntensity(int intensityArray[]);

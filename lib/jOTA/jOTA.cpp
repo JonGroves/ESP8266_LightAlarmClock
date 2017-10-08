@@ -5,11 +5,11 @@
 #include <DNSServer.h>
 
 //Options:
-const bool createAccessPoint = true;
-const char* ssid = "TELUS1846";
-const char* password = "publicspasswordia";
+const bool createAccessPoint = false;
+const char* ssid = "TELUS4201";
+const char* password = "ilovegreeneggsandham312";
 const byte DNS_PORT = 53;
-const IPAddress apIP(192, 168, 1, 1);
+const IPAddress apIP(192, 168, 3, 150);
 
 //Globals:
 DNSServer dnsServer;
@@ -17,6 +17,7 @@ DNSServer dnsServer;
 void OTAsetup() {
   Serial.begin(115200);
   Serial.println("Booting");
+  Serial.print("Create access point?: ");
   Serial.println(String(createAccessPoint));
 
   if (createAccessPoint == true)
@@ -48,7 +49,7 @@ void OTAsetup() {
   else
   {
 
-    Serial.println("Looking for SSID 'TELUS1846', Password: 'publics***'");
+    Serial.println("Looking for SSID 'TELUS4201', Password: 'il***'");
     WiFi.begin(ssid, password);
     //Wait for connection to complete
     while (WiFi.waitForConnectResult() != WL_CONNECTED) {

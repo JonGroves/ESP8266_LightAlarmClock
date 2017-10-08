@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en-US" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb#">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="profile" href="http://gmpg.org/xfn/11">
+<link rel="pingback" href="https://automatedhome.party/xmlrpc.php">
+
+<title>WiFi Controlled Car with a Self Hosted HTML/JS Joystick Using a Wemos D1 Mini/ESP8266 | Automated Home Party</title>
+
+<!-- All in One SEO Pack 2.3.16 by Michael Torbert of Semper Fi Web Design[311,432] -->
+<meta name="description"  content="I created a dual motor Wifi car that can be controlled from your computer or mobile web browser. This page shows you how to build it yourself." />
+
+<link rel="canonical" href="https://automatedhome.party/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/" />
+<!-- /all in one seo pack -->
+<link rel='dns-prefetch' href='//ws.sharethis.com' />
+<link rel='dns-prefetch' href='//fonts.googleapis.com' />
+<link rel='dns-prefetch' href='//s.w.org' />
+<link rel="alternate" type="application/rss+xml" title="Automated Home Party &raquo; Feed" href="https://automatedhome.party/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Automated Home Party &raquo; Comments Feed" href="https://automatedhome.party/comments/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Automated Home Party &raquo; WiFi Controlled Car with a Self Hosted HTML/JS Joystick Using a Wemos D1 Mini/ESP8266 Comments Feed" href="https://automatedhome.party/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/feed/" />
+		<script type="text/javascript">
+			window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/2.3\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/2.3\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/automatedhome.party\/wp-includes\/js\/wp-emoji-release.min.js?ver=4.8.1"}};
+			!function(a,b,c){function d(a){var b,c,d,e,f=String.fromCharCode;if(!k||!k.fillText)return!1;switch(k.clearRect(0,0,j.width,j.height),k.textBaseline="top",k.font="600 32px Arial",a){case"flag":return k.fillText(f(55356,56826,55356,56819),0,0),b=j.toDataURL(),k.clearRect(0,0,j.width,j.height),k.fillText(f(55356,56826,8203,55356,56819),0,0),c=j.toDataURL(),b===c&&(k.clearRect(0,0,j.width,j.height),k.fillText(f(55356,57332,56128,56423,56128,56418,56128,56421,56128,56430,56128,56423,56128,56447),0,0),b=j.toDataURL(),k.clearRect(0,0,j.width,j.height),k.fillText(f(55356,57332,8203,56128,56423,8203,56128,56418,8203,56128,56421,8203,56128,56430,8203,56128,56423,8203,56128,56447),0,0),c=j.toDataURL(),b!==c);case"emoji4":return k.fillText(f(55358,56794,8205,9794,65039),0,0),d=j.toDataURL(),k.clearRect(0,0,j.width,j.height),k.fillText(f(55358,56794,8203,9794,65039),0,0),e=j.toDataURL(),d!==e}return!1}function e(a){var c=b.createElement("script");c.src=a,c.defer=c.type="text/javascript",b.getElementsByTagName("head")[0].appendChild(c)}var f,g,h,i,j=b.createElement("canvas"),k=j.getContext&&j.getContext("2d");for(i=Array("flag","emoji4"),c.supports={everything:!0,everythingExceptFlag:!0},h=0;h<i.length;h++)c.supports[i[h]]=d(i[h]),c.supports.everything=c.supports.everything&&c.supports[i[h]],"flag"!==i[h]&&(c.supports.everythingExceptFlag=c.supports.everythingExceptFlag&&c.supports[i[h]]);c.supports.everythingExceptFlag=c.supports.everythingExceptFlag&&!c.supports.flag,c.DOMReady=!1,c.readyCallback=function(){c.DOMReady=!0},c.supports.everything||(g=function(){c.readyCallback()},b.addEventListener?(b.addEventListener("DOMContentLoaded",g,!1),a.addEventListener("load",g,!1)):(a.attachEvent("onload",g),b.attachEvent("onreadystatechange",function(){"complete"===b.readyState&&c.readyCallback()})),f=c.source||{},f.concatemoji?e(f.concatemoji):f.wpemoji&&f.twemoji&&(e(f.twemoji),e(f.wpemoji)))}(window,document,window._wpemojiSettings);
+		</script>
+		<style type="text/css">
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 .07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+<link rel='stylesheet' id='crayon-css'  href='https://automatedhome.party/wp-content/plugins/crayon-syntax-highlighter/css/min/crayon.min.css?ver=_2.7.2_beta' type='text/css' media='all' />
+<link rel='stylesheet' id='crayon-theme-classic-css'  href='https://automatedhome.party/wp-content/plugins/crayon-syntax-highlighter/themes/classic/classic.css?ver=_2.7.2_beta' type='text/css' media='all' />
+<link rel='stylesheet' id='crayon-font-monaco-css'  href='https://automatedhome.party/wp-content/plugins/crayon-syntax-highlighter/fonts/monaco.css?ver=_2.7.2_beta' type='text/css' media='all' />
+<link rel='stylesheet' id='cptch_stylesheet-css'  href='https://automatedhome.party/wp-content/plugins/captcha/css/front_end_style.css?ver=4.3.5' type='text/css' media='all' />
+<link rel='stylesheet' id='dashicons-css'  href='https://automatedhome.party/wp-includes/css/dashicons.min.css?ver=4.8.1' type='text/css' media='all' />
+<link rel='stylesheet' id='cptch_desktop_style-css'  href='https://automatedhome.party/wp-content/plugins/captcha/css/desktop_style.css?ver=4.3.5' type='text/css' media='all' />
+<link rel='stylesheet' id='mce-comments-no-status-bar-css'  href='https://automatedhome.party/wp-content/plugins/tinymce-comment-field/css/editor-no-statusbar.css?ver=4.8.1' type='text/css' media='all' />
+<link rel='stylesheet' id='slick-css'  href='https://automatedhome.party/wp-content/plugins/widget-post-slider/assets/css/slick.css' type='text/css' media='all' />
+<link rel='stylesheet' id='font-awesome-css-css'  href='https://automatedhome.party/wp-content/plugins/widget-post-slider/assets/css/font-awesome.min.css' type='text/css' media='all' />
+<link rel='stylesheet' id='widget-post-slider-style-css'  href='https://automatedhome.party/wp-content/plugins/widget-post-slider/assets/css/style.css?ver=4.8.1' type='text/css' media='all' />
+<link rel='stylesheet' id='xmag-fonts-css'  href='//fonts.googleapis.com/css?family=Open+Sans%3A400%2C700%2C300%2C400italic%2C700italic%7CRoboto%3A400%2C700%2C300&#038;subset=latin%2Clatin-ext' type='text/css' media='all' />
+<link rel='stylesheet' id='xmag-icons-css'  href='https://automatedhome.party/wp-content/themes/xmag/fonts/simple-line-icons.css?ver=2.2.2' type='text/css' media='all' />
+<link rel='stylesheet' id='xmag-style-css'  href='https://automatedhome.party/wp-content/themes/xmag/style.css?ver=1.2.3' type='text/css' media='all' />
+<style id='xmag-style-inline-css' type='text/css'>
+
+		.site-header {
+		background-color: #adadad;	
+		}
+			.site-title a, .site-description, .top-navigation > ul > li > a {
+			color: rgba(0,0,0,.8);
+			}
+			.site-title a:hover, .top-navigation > ul > li > a:hover {
+			color: rgba(0,0,0,.7);
+			}
+</style>
+<link rel='stylesheet' id='ecae-frontend-css'  href='https://automatedhome.party/wp-content/plugins/easy-custom-auto-excerpt/assets/style-frontend.css?ver=2.4.5' type='text/css' media='all' />
+<link rel='stylesheet' id='ecae-buttonskin-none-css'  href='https://automatedhome.party/wp-content/plugins/easy-custom-auto-excerpt/buttons/ecae-buttonskin-none.css?ver=2.4.5' type='text/css' media='all' />
+<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/jquery/jquery.js?ver=1.12.4'></script>
+<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.4.1'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var CrayonSyntaxSettings = {"version":"_2.7.2_beta","is_admin":"0","ajaxurl":"https:\/\/automatedhome.party\/wp-admin\/admin-ajax.php","prefix":"crayon-","setting":"crayon-setting","selected":"crayon-setting-selected","changed":"crayon-setting-changed","special":"crayon-setting-special","orig_value":"data-orig-value","debug":""};
+var CrayonSyntaxStrings = {"copy":"Press %s to Copy, %s to Paste","minimize":"Click To Expand Code"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://automatedhome.party/wp-content/plugins/crayon-syntax-highlighter/js/min/crayon.min.js?ver=_2.7.2_beta'></script>
+<script id='st_insights_js' type='text/javascript' src='https://ws.sharethis.com/button/st_insights.js?publisher=eba0f3ba-f9ab-408c-bc68-c28af5afe749&#038;product=feather'></script>
+<link rel='https://api.w.org/' href='https://automatedhome.party/wp-json/' />
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://automatedhome.party/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="https://automatedhome.party/wp-includes/wlwmanifest.xml" /> 
+<link rel='prev' title='Using the Home Assistant Alert Component with Telegram Acknowledge' href='https://automatedhome.party/2017/06/05/using-the-home-assistant-alert-component-with-telegram-acknowledge/' />
+<link rel='shortlink' href='https://automatedhome.party/?p=337' />
+<link rel="alternate" type="application/json+oembed" href="https://automatedhome.party/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F" />
+<link rel="alternate" type="text/xml+oembed" href="https://automatedhome.party/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F&#038;format=xml" />
+
+<style type="text/css"></style>
+
+<style type="text/css">
+.synved-social-resolution-single {
+display: inline-block;
+}
+.synved-social-resolution-normal {
+display: inline-block;
+}
+.synved-social-resolution-hidef {
+display: none;
+}
+
+@media only screen and (min--moz-device-pixel-ratio: 2),
+only screen and (-o-min-device-pixel-ratio: 2/1),
+only screen and (-webkit-min-device-pixel-ratio: 2),
+only screen and (min-device-pixel-ratio: 2),
+only screen and (min-resolution: 2dppx),
+only screen and (min-resolution: 192dpi) {
+	.synved-social-resolution-normal {
+	display: none;
+	}
+	.synved-social-resolution-hidef {
+	display: inline-block;
+	}
+}
+</style>
+		<style type="text/css" id="wp-custom-css">
+			/*
+You can add your own CSS here.
+
+Click the help icon above to learn more.
+*/
+
+.post { border-bottom: 1px solid black !important; }
+
+		</style>
+	
+<!-- START - Facebook Open Graph, Google+ and Twitter Card Tags 2.0.8.2 -->
+ <!-- Facebook Open Graph -->
+  <meta property="og:locale" content="en_US"/>
+  <meta property="og:site_name" content="Automated Home Party"/>
+  <meta property="og:title" content="WiFi Controlled Car with a Self Hosted HTML/JS Joystick Using a Wemos D1 Mini/ESP8266"/>
+  <meta property="og:url" content="https://automatedhome.party/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:description" content="Here&#039;s a video of the car in action:
+
+Gallery of all the pictures I took.
+The most recent project I decided to work on was a line following robot. However, as I was testing it to make sure the direction code was working, I decided to develop something that I can control from my smartphone. It tur"/>
+  <meta property="og:image" content="http://automatedhome.party/wp-content/uploads/2017/07/CarJoystick.png"/>
+  <meta property="article:published_time" content="2017-07-15T01:02:40+00:00"/>
+  <meta property="article:modified_time" content="2017-08-18T21:45:24+00:00" />
+  <meta property="og:updated_time" content="2017-08-18T21:45:24+00:00" />
+  <meta property="article:section" content="ESP8266"/>
+  <meta property="article:section" content="Game"/>
+  <meta property="article:section" content="IOT"/>
+  <meta property="article:section" content="Wemos D1 Mini"/>
+ <!-- Google+ / Schema.org -->
+  <meta itemprop="name" content="WiFi Controlled Car with a Self Hosted HTML/JS Joystick Using a Wemos D1 Mini/ESP8266"/>
+  <meta itemprop="description" content="Here&#039;s a video of the car in action:
+
+Gallery of all the pictures I took.
+The most recent project I decided to work on was a line following robot. However, as I was testing it to make sure the direction code was working, I decided to develop something that I can control from my smartphone. It tur"/>
+  <meta itemprop="image" content="http://automatedhome.party/wp-content/uploads/2017/07/CarJoystick.png"/>
+ <!-- Twitter Cards -->
+  <meta name="twitter:title" content="WiFi Controlled Car with a Self Hosted HTML/JS Joystick Using a Wemos D1 Mini/ESP8266"/>
+  <meta name="twitter:url" content="https://automatedhome.party/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/"/>
+  <meta name="twitter:description" content="Here&#039;s a video of the car in action:
+
+Gallery of all the pictures I took.
+The most recent project I decided to work on was a line following robot. However, as I was testing it to make sure the direction code was working, I decided to develop something that I can control from my smartphone. It tur"/>
+  <meta name="twitter:image" content="http://automatedhome.party/wp-content/uploads/2017/07/CarJoystick.png"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+ <!-- SEO -->
+ <!-- Misc. tags -->
+<!-- END - Facebook Open Graph, Google+ and Twitter Card Tags 2.0.8.2 -->
+
+</head>
+<body class="post-template-default single single-post postid-337 single-format-standard site-fullwidth">
+	
+<div id="page" class="hfeed site">
+	
+	<a class="skip-link screen-reader-text" href="#content">Skip to content</a>
+	
+	<aside id="mobile-header" class="mobile-header">
+		<a class="mobile-menu-toggle" id="mobile-menu-toggle" href="#mobile-nav" title="Menu"><span class="button-toggle"></span></a>
+		<a class="mobile-title" href="https://automatedhome.party/" rel="home">Automated Home Party</a>
+	</aside>
+	
+	<nav id="mobile-navigation" class="mobile-navigation" role="navigation"></nav>
+
+	<header id="masthead" class="site-header" role="banner">
+		
+		<div class="header-top collapse">
+			<div class="container">
+				<div class="row">
+					<div class="col-4">
+						<div class="site-branding">
+																<p class="site-title"><a href="https://automatedhome.party/" rel="home">Automated Home Party</a></p>
+														
+																							<p class="site-description">Home Automation with Home Assistant and ESP8266</p>
+													</div><!-- .site-branding -->
+					</div>
+					<div class="col-8">
+						<div class="header-navigation">
+															<div class="search-top">
+									
+<form role="search" method="get" class="search-form" action="https://automatedhome.party/">
+	<label>
+		<span class="screen-reader-text">Search for:</span>
+		<input type="search" class="search-field" placeholder="Search &hellip;" value="" name="s" />
+	</label>
+	<button type="submit" class="search-submit"><span class="sli icon-magnifier"></span> <span class="screen-reader-text">Search</span></button>
+</form>
+								</div>
+							<!-- Search Form -->
+							<nav id="top-navigation" class="top-navigation" role="navigation">
+								<ul id="menu-headerbar" class="top-menu"><li id="menu-item-372" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-372"><a href="http://automatedhome.party">Home</a></li>
+<li id="menu-item-373" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-373"><a href="https://automatedhome.party/about/">About</a></li>
+</ul>							</nav><!-- #top-navigation -->
+						</div>
+					</div>
+				</div><!-- .row -->
+			</div>
+		</div><!-- Header Top -->
+		
+					
+		<nav id="main-navbar" class="main-navbar">
+			<div class="container">
+				<div id="main-navigation" class="main-navigation">
+										
+									</div>
+			</div>
+		</nav><!-- Main Navbar -->
+	
+	</header><!-- #masthead -->
+	
+	<div id="content" class="site-content">
+		<div class="container">
+			
+		
+			
+		<div class="featured-image">
+			<header class="entry-header overlay">
+				<span class="category"><a href="https://automatedhome.party/category/esp8266/" rel="category tag">ESP8266</a> <a href="https://automatedhome.party/category/game/" rel="category tag">Game</a> <a href="https://automatedhome.party/category/iot/" rel="category tag">IOT</a> <a href="https://automatedhome.party/category/wemos-d1-mini/" rel="category tag">Wemos D1 Mini</a></span>
+				<h1 class="entry-title">WiFi Controlled Car with a Self Hosted HTML/JS Joystick Using a Wemos D1 Mini/ESP8266</h1>				<div class="entry-meta">
+					<span class="icon-clock"></span>
+					July 15, 2017					<span class="sep"></span>
+					<span class="comments-link"><a href="https://automatedhome.party/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/#comments"><span class="icon-bubbles"></span> 2</a></span>				</div>
+			</header>
+			<div class="cover-bg" style="background-image:url(https://automatedhome.party/wp-content/uploads/2017/07/img_3709-1200x520.jpg)"></div>
+		</div><!-- .featured-image -->
+
+		
+	<div id="primary" class="content-area">
+		<main id="main" class="site-main" role="main">
+		
+					
+				
+<article id="post-337" class="post-337 post type-post status-publish format-standard has-post-thumbnail hentry category-esp8266 category-game category-iot category-wemos-d1-mini tag-esp8266 tag-game tag-iot tag-wemos-d1-mini">
+
+		
+			
+			
+	<div class="entry-content">
+		<a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-normal synved-social-provider-facebook nolightbox" data-provider="facebook" target="_blank" rel="nofollow" title="Share on Facebook" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F&#038;t=WiFi%20Controlled%20Car%20with%20a%20Self%20Hosted%20HTML%2FJS%20Joystick%20Using%20a%20Wemos%20D1%20Mini%2FESP8266&#038;s=100&#038;p&#091;url&#093;=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F&#038;p&#091;images&#093;&#091;0&#093;=https%3A%2F%2Fautomatedhome.party%2Fwp-content%2Fuploads%2F2017%2F07%2Fimg_3709.jpg&#038;p&#091;title&#093;=WiFi%20Controlled%20Car%20with%20a%20Self%20Hosted%20HTML%2FJS%20Joystick%20Using%20a%20Wemos%20D1%20Mini%2FESP8266" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;margin-right:5px;"><img alt="Facebook" title="Share on Facebook" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/16x16/facebook.png" /></a><a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-normal synved-social-provider-twitter nolightbox" data-provider="twitter" target="_blank" rel="nofollow" title="Share on Twitter" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F&#038;text=Hey%20check%20this%20out" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;margin-right:5px;"><img alt="twitter" title="Share on Twitter" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/16x16/twitter.png" /></a><a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-normal synved-social-provider-google_plus nolightbox" data-provider="google_plus" target="_blank" rel="nofollow" title="Share on Google+" href="https://plus.google.com/share?url=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;margin-right:5px;"><img alt="google_plus" title="Share on Google+" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/16x16/google_plus.png" /></a><a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-normal synved-social-provider-reddit nolightbox" data-provider="reddit" target="_blank" rel="nofollow" title="Share on Reddit" href="http://www.reddit.com/submit?url=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F&#038;title=WiFi%20Controlled%20Car%20with%20a%20Self%20Hosted%20HTML%2FJS%20Joystick%20Using%20a%20Wemos%20D1%20Mini%2FESP8266" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;margin-right:5px;"><img alt="reddit" title="Share on Reddit" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/16x16/reddit.png" /></a><a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-normal synved-social-provider-pinterest nolightbox" data-provider="pinterest" target="_blank" rel="nofollow" title="Pin it with Pinterest" href="http://pinterest.com/pin/create/button/?url=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F&#038;media=https%3A%2F%2Fautomatedhome.party%2Fwp-content%2Fuploads%2F2017%2F07%2Fimg_3709.jpg&#038;description=WiFi%20Controlled%20Car%20with%20a%20Self%20Hosted%20HTML%2FJS%20Joystick%20Using%20a%20Wemos%20D1%20Mini%2FESP8266" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;margin-right:5px;"><img alt="pinterest" title="Pin it with Pinterest" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/16x16/pinterest.png" /></a><a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-normal synved-social-provider-linkedin nolightbox" data-provider="linkedin" target="_blank" rel="nofollow" title="Share on Linkedin" href="http://www.linkedin.com/shareArticle?mini=true&#038;url=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F&#038;title=WiFi%20Controlled%20Car%20with%20a%20Self%20Hosted%20HTML%2FJS%20Joystick%20Using%20a%20Wemos%20D1%20Mini%2FESP8266" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;margin-right:5px;"><img alt="linkedin" title="Share on Linkedin" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/16x16/linkedin.png" /></a><a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-normal synved-social-provider-mail nolightbox" data-provider="mail" rel="nofollow" title="Share by email" href="mailto:?subject=WiFi%20Controlled%20Car%20with%20a%20Self%20Hosted%20HTML%2FJS%20Joystick%20Using%20a%20Wemos%20D1%20Mini%2FESP8266&#038;body=Hey%20check%20this%20out:%20https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;"><img alt="mail" title="Share by email" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/16x16/mail.png" /></a><a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-hidef synved-social-provider-facebook nolightbox" data-provider="facebook" target="_blank" rel="nofollow" title="Share on Facebook" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F&#038;t=WiFi%20Controlled%20Car%20with%20a%20Self%20Hosted%20HTML%2FJS%20Joystick%20Using%20a%20Wemos%20D1%20Mini%2FESP8266&#038;s=100&#038;p&#091;url&#093;=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F&#038;p&#091;images&#093;&#091;0&#093;=https%3A%2F%2Fautomatedhome.party%2Fwp-content%2Fuploads%2F2017%2F07%2Fimg_3709.jpg&#038;p&#091;title&#093;=WiFi%20Controlled%20Car%20with%20a%20Self%20Hosted%20HTML%2FJS%20Joystick%20Using%20a%20Wemos%20D1%20Mini%2FESP8266" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;margin-right:5px;"><img alt="Facebook" title="Share on Facebook" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/32x32/facebook.png" /></a><a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-hidef synved-social-provider-twitter nolightbox" data-provider="twitter" target="_blank" rel="nofollow" title="Share on Twitter" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F&#038;text=Hey%20check%20this%20out" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;margin-right:5px;"><img alt="twitter" title="Share on Twitter" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/32x32/twitter.png" /></a><a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-hidef synved-social-provider-google_plus nolightbox" data-provider="google_plus" target="_blank" rel="nofollow" title="Share on Google+" href="https://plus.google.com/share?url=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;margin-right:5px;"><img alt="google_plus" title="Share on Google+" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/32x32/google_plus.png" /></a><a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-hidef synved-social-provider-reddit nolightbox" data-provider="reddit" target="_blank" rel="nofollow" title="Share on Reddit" href="http://www.reddit.com/submit?url=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F&#038;title=WiFi%20Controlled%20Car%20with%20a%20Self%20Hosted%20HTML%2FJS%20Joystick%20Using%20a%20Wemos%20D1%20Mini%2FESP8266" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;margin-right:5px;"><img alt="reddit" title="Share on Reddit" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/32x32/reddit.png" /></a><a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-hidef synved-social-provider-pinterest nolightbox" data-provider="pinterest" target="_blank" rel="nofollow" title="Pin it with Pinterest" href="http://pinterest.com/pin/create/button/?url=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F&#038;media=https%3A%2F%2Fautomatedhome.party%2Fwp-content%2Fuploads%2F2017%2F07%2Fimg_3709.jpg&#038;description=WiFi%20Controlled%20Car%20with%20a%20Self%20Hosted%20HTML%2FJS%20Joystick%20Using%20a%20Wemos%20D1%20Mini%2FESP8266" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;margin-right:5px;"><img alt="pinterest" title="Pin it with Pinterest" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/32x32/pinterest.png" /></a><a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-hidef synved-social-provider-linkedin nolightbox" data-provider="linkedin" target="_blank" rel="nofollow" title="Share on Linkedin" href="http://www.linkedin.com/shareArticle?mini=true&#038;url=https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F&#038;title=WiFi%20Controlled%20Car%20with%20a%20Self%20Hosted%20HTML%2FJS%20Joystick%20Using%20a%20Wemos%20D1%20Mini%2FESP8266" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;margin-right:5px;"><img alt="linkedin" title="Share on Linkedin" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/32x32/linkedin.png" /></a><a class="synved-social-button synved-social-button-share synved-social-size-16 synved-social-resolution-hidef synved-social-provider-mail nolightbox" data-provider="mail" rel="nofollow" title="Share by email" href="mailto:?subject=WiFi%20Controlled%20Car%20with%20a%20Self%20Hosted%20HTML%2FJS%20Joystick%20Using%20a%20Wemos%20D1%20Mini%2FESP8266&#038;body=Hey%20check%20this%20out:%20https%3A%2F%2Fautomatedhome.party%2F2017%2F07%2F15%2Fwifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266%2F" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;"><img alt="mail" title="Share by email" class="synved-share-image synved-social-image synved-social-image-share" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/32x32/mail.png" /></a><p>Here&#8217;s a video of the car in action:</p>
+<p style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/XWXeEZhSREI" frameborder="0" allowfullscreen="allowfullscreen"></iframe></p>
+<p><a href="http://automatedhome.party/wifi-car-gallery/">Gallery of all the pictures I took.</a></p>
+<p>The most recent project I decided to work on was a line following robot. However, as I was testing it to make sure the direction code was working, I decided to develop something that I can control from my smartphone. It turned out much better than I was expecting, so I figured I should make a blog post about it.</p>
+<p>As you can clearly see, I pieced together the parts for my car. It&#8217;s a block of wood, with a caster on the front, and a couple of brackets on the back to hold the motor/wheels. All of those parts cost about $7.50 total off of AliExpress. In hindsight, I see that I should have just bought a car kit, which would do the same thing, for a dollar more, and is much less of a headache to put together.</p>
+<p><strong>Part List:</strong></p>
+<ul>
+<li><a href="http://amzn.to/2vn249z">Robot Car Kit</a> | <a href="http://s.click.aliexpress.com/e/Uzn2RZn">AliExpress</a></li>
+<li><a href="http://amzn.to/2i1DDus" target="_blank" rel="noopener noreferrer">Wemos D1 Mini</a> | <a href="http://s.click.aliexpress.com/e/IEubiub" target="_blank" rel="noopener noreferrer">AliExpress</a></li>
+<li><a href="http://amzn.to/2jkxifx" target="_blank" rel="noopener noreferrer">MicroUSB Cable and Charger for Wemos</a></li>
+<li><a href="http://amzn.to/2uk8l97">Motor Controller </a>| <a href="http://s.click.aliexpress.com/e/aMVRJMF">AliExpress</a></li>
+<li><a href="http://amzn.to/2tpwne8">Portable Charger </a>| <a href="http://s.click.aliexpress.com/e/mMJayjm">AliExpress</a></li>
+<li><a href="http://amzn.to/2j7iLip" target="_blank" rel="noopener noreferrer">Dupont jumpers</a> | <a href="http://s.click.aliexpress.com/e/2ZbAIYN">AliExpress</a></li>
+<li><a href="http://amzn.to/2t0Subu">Wire </a>| <a href="http://s.click.aliexpress.com/e/jA2rZNv">AliExpress</a></li>
+<li><a href="http://automatedhome.party/wp-content/uploads/2017/07/virtualjoystick.zip">Download HTML/JS Files for the Joystick Code</a></li>
+<li><a href="http://amzn.to/2iNbUMS" target="_blank" rel="noopener noreferrer">Electronic Project Case (Optional)</a></li>
+</ul>
+<p>I just used a portable charger to power the Wemos. You may want to use batteries with a battery holder(3 AA batteries in series, with positive on the 5v pin, and negative on Ground). Either way will work, the portable charger was just easier.</p>
+<p>The first step is to put the car together. I don&#8217;t have the kit, but I don&#8217;t think people should waste their time rigging it together like I did, so I&#8217;m not going to go into any detail on putting it together. The kit seems pretty easy to assemble from some of the videos I have seen.</p>
+<p>Next, you need to wire up the TB6612FNG motor controller to the Wemos and to the motor. To do that, refer to the schematic below. Keep in mind that if one or both motors get wired backwards, the code will cause them to go in reverse. You can either rewire them, or you can just edit the code appropriately. I have put in a comment in the code indicating what you would need to change:</p>
+<figure id="attachment_338" style="width: 300px" class="wp-caption aligncenter"><a href="http://automatedhome.party/wp-content/uploads/2017/07/Schematic.png" target="_blank" rel="noopener"><img class="wp-image-338 size-medium" src="http://automatedhome.party/wp-content/uploads/2017/07/Schematic-300x136.png" alt="" width="300" height="136" srcset="https://automatedhome.party/wp-content/uploads/2017/07/Schematic-300x136.png 300w, https://automatedhome.party/wp-content/uploads/2017/07/Schematic-768x348.png 768w, https://automatedhome.party/wp-content/uploads/2017/07/Schematic-1024x465.png 1024w" sizes="(max-width: 300px) 100vw, 300px" /></a><figcaption class="wp-caption-text">WiFi Car Schematic</figcaption></figure>
+<p>&nbsp;</p>
+<p>Once you have the everything connected, you need to upload the HTML and Javascript files for the web based joystick. The code for the Joystick came from <a href="http://jeromeetienne.github.io/virtualjoystick.js/examples/basic.html">HERE.</a> I modified the code for those to send the joystick coordinates to the ESP.</p>
+<p>These 2 files need to be uploaded to SPIFFS. I use the instructions located <a href="http://esp8266.github.io/Arduino/versions/2.0.0/doc/filesystem.html#uploading-files-to-file-system">HERE</a>. Download the zip file from the first step in that link. For the first step of the instructions, go to your preferences in Arduino IDE, and look at your sketchbook folder. Browse to that folder, and create a folder names &#8216;tools&#8217; if it&#8217;s not already there. Unzip that file into this tools directory. For me, my sketchbook folder was 
+			<span id="crayon-59b5dbf049bb6693903013" class="crayon-syntax crayon-syntax-inline  crayon-theme-classic crayon-theme-classic-inline crayon-font-monaco" style="font-size: 12px !important; line-height: 15px !important;font-size: 12px !important;"><span class="crayon-pre crayon-code" style="font-size: 12px !important; line-height: 15px !important;font-size: 12px !important; -moz-tab-size:4; -o-tab-size:4; -webkit-tab-size:4; tab-size:4;"><span class="crayon-v">C</span><span class="crayon-o">:</span><span class="crayon-sy">\</span><span class="crayon-v">Users</span><span class="crayon-sy">\</span><span class="crayon-o">&lt;</span><span class="crayon-v">username</span><span class="crayon-o">&gt;</span><span class="crayon-sy">\</span><span class="crayon-v">Documents</span><span class="crayon-sy">\</span><span class="crayon-v">Arduino</span></span></span> , and after unzipping, I had a file located at 
+			<span id="crayon-59b5dbf049bc2787030063" class="crayon-syntax crayon-syntax-inline  crayon-theme-classic crayon-theme-classic-inline crayon-font-monaco" style="font-size: 12px !important; line-height: 15px !important;font-size: 12px !important;"><span class="crayon-pre crayon-code" style="font-size: 12px !important; line-height: 15px !important;font-size: 12px !important; -moz-tab-size:4; -o-tab-size:4; -webkit-tab-size:4; tab-size:4;"><span class="crayon-v">C</span><span class="crayon-o">:</span><span class="crayon-sy">\</span><span class="crayon-v">Users</span><span class="crayon-sy">\</span><span class="crayon-o">&lt;</span><span class="crayon-v">username</span><span class="crayon-o">&gt;</span><span class="crayon-sy">\</span><span class="crayon-v">Documents</span><span class="crayon-sy">\</span><span class="crayon-v">Arduino</span><span class="crayon-sy">\</span><span class="crayon-v">tools</span><span class="crayon-sy">\</span><span class="crayon-v">ESP8266FS</span><span class="crayon-sy">\</span><span class="crayon-v">tool</span><span class="crayon-sy">\</span><span class="crayon-v">esp8266fs</span><span class="crayon-sy">.</span><span class="crayon-v">jar</span></span></span> . Restart Arduino IDE.</p>
+<p>Now, go ahead and create the sketch/ino file you will be putting this project into and save it. Go to the folder you saved it in, and create a folder under there called &#8216;data&#8217;. <a href="http://automatedhome.party/wp-content/uploads/2017/07/virtualjoystick.zip">DOWNLOAD THE MODIFIED HTML/JS FILES.</a> Unzip the HTML/JS files into this &#8216;data&#8217; folder. You may need to restart Arduino IDE, and then go to &#8216;Tools-&gt;ESP8266 Sketch Data Upload&#8217;. This will upload the files in the data folder to SPIFFS. If you are on mobile, and just want to view the code, <a href="http://automatedhome.party/html-and-js-code-for-wifi-car/">click here.</a></p>
+<p>Upload the code to the Wemos/ESP. Be sure to modify the SSID and Password. :</p>
+<p></p><!-- Crayon Syntax Highlighter v_2.7.2_beta -->
+
+		<div id="crayon-59b5dbf049bc5804310445" class="crayon-syntax crayon-theme-classic crayon-font-monaco crayon-os-pc print-yes notranslate" data-settings=" minimize scroll-mouseover" style=" margin-top: 12px; margin-bottom: 12px; font-size: 12px !important; line-height: 15px !important;">
+		
+			<div class="crayon-toolbar" data-settings=" show" style="font-size: 12px !important;height: 18px !important; line-height: 18px !important;"><span class="crayon-title"></span>
+			<div class="crayon-tools" style="font-size: 12px !important;height: 18px !important; line-height: 18px !important;"><div class="crayon-button crayon-nums-button" title="Toggle Line Numbers"><div class="crayon-button-icon"></div></div><div class="crayon-button crayon-plain-button" title="Toggle Plain Code"><div class="crayon-button-icon"></div></div><div class="crayon-button crayon-expand-button" title="Expand Code"><div class="crayon-button-icon"></div></div><div class="crayon-button crayon-copy-button" title="Copy"><div class="crayon-button-icon"></div></div><div class="crayon-button crayon-popup-button" title="Open Code In New Window"><div class="crayon-button-icon"></div></div><span class="crayon-language">C++</span></div></div>
+			<div class="crayon-info" style="min-height: 16.8px !important; line-height: 16.8px !important;"></div>
+			<div class="crayon-plain-wrap"><textarea wrap="soft" class="crayon-plain print-no" data-settings="dblclick" readonly style="-moz-tab-size:4; -o-tab-size:4; -webkit-tab-size:4; tab-size:4; font-size: 12px !important; line-height: 15px !important;">
+#include &lt;ESP8266WebServer.h&gt;
+#include &lt;FS.h&gt;
+#include &lt;ESP8266WiFi.h&gt;
+
+//Set Wifi ssid and password
+char ssid[] = "&lt;SSID&gt;";
+char pass[] = "&lt;password&gt;";
+
+//Define the pins
+int STBY = 12; //standby
+//Motor A
+int PWMA = 5; //Speed control
+int AIN1 = 14; //Direction
+int AIN2 = 16; //Direction
+//Motor B
+int PWMB = 4; //Speed control
+int BIN1 = 15; //Direction
+int BIN2 = 13; //Direction
+
+ESP8266WebServer server (80);
+
+//This function takes the parameters passed in the URL(the x and y coordinates of the joystick)
+//and sets the motor speed based on those parameters. 
+void handleJSData(){
+  boolean yDir;
+  int x = server.arg(0).toInt() * 10;
+  int y = server.arg(1).toInt() * 10;
+  int aSpeed = abs(y);
+  int bSpeed = abs(y);
+  //set the direction based on y being negative or positive
+  if ( y &lt; 0 ){
+    yDir = 0; 
+  }
+  else { 
+    yDir = 1;
+  }  
+  //adjust to speed of each each motor depending on the x-axis
+  //it slows down one motor and speeds up the other proportionately 
+  //based on the amount of turning
+  aSpeed = constrain(aSpeed + x/2, 0, 1023);
+  bSpeed = constrain(bSpeed - x/2, 0, 1023);
+
+  //use the speed and direction values to turn the motors
+  //if either motor is going in reverse from what is expected,
+  //just change the 2 digitalWrite lines for both motors:
+  //!ydir would become ydir, and ydir would become !ydir
+  digitalWrite(STBY, HIGH);  
+  //MotorA
+  digitalWrite(AIN1, !yDir);
+  digitalWrite(AIN2, yDir);
+  analogWrite(PWMA, aSpeed);
+  //MotorB
+  digitalWrite(BIN1, !yDir);
+  digitalWrite(BIN2, yDir);
+  analogWrite(PWMB, bSpeed);
+
+  //return an HTTP 200
+  server.send(200, "text/plain", "");   
+}
+
+void setup()
+{
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, pass);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");  
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  //set the pins as outputs
+  pinMode(STBY, OUTPUT);
+
+  pinMode(PWMA, OUTPUT);
+  pinMode(AIN1, OUTPUT);
+  pinMode(AIN2, OUTPUT);
+
+  pinMode(PWMB, OUTPUT);
+  pinMode(BIN1, OUTPUT);
+  pinMode(BIN2, OUTPUT);  
+  // Debug console
+  Serial.begin(115200);
+  //initialize SPIFFS to be able to serve up the static HTML files. 
+  if (!SPIFFS.begin()){
+    Serial.println("SPIFFS Mount failed");
+  } 
+  else {
+    Serial.println("SPIFFS Mount succesfull");
+  }
+  //set the static pages on SPIFFS for the html and js
+  server.serveStatic("/", SPIFFS, "/joystick.html"); 
+  server.serveStatic("/virtualjoystick.js", SPIFFS, "/virtualjoystick.js");
+  //call handleJSData function when this URL is accessed by the js in the html file
+  server.on("/jsData.html", handleJSData);  
+  server.begin();
+}
+
+void loop()
+{
+  server.handleClient();  
+}</textarea></div>
+			<div class="crayon-main" style=" max-height: 500px;">
+				<table class="crayon-table">
+					<tr class="crayon-row">
+				<td class="crayon-nums " data-settings="show">
+					<div class="crayon-nums-content" style="font-size: 12px !important; line-height: 15px !important;"><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-1">1</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-2">2</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-3">3</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-4">4</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-5">5</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-6">6</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-7">7</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-8">8</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-9">9</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-10">10</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-11">11</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-12">12</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-13">13</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-14">14</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-15">15</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-16">16</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-17">17</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-18">18</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-19">19</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-20">20</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-21">21</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-22">22</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-23">23</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-24">24</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-25">25</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-26">26</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-27">27</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-28">28</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-29">29</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-30">30</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-31">31</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-32">32</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-33">33</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-34">34</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-35">35</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-36">36</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-37">37</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-38">38</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-39">39</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-40">40</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-41">41</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-42">42</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-43">43</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-44">44</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-45">45</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-46">46</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-47">47</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-48">48</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-49">49</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-50">50</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-51">51</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-52">52</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-53">53</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-54">54</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-55">55</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-56">56</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-57">57</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-58">58</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-59">59</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-60">60</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-61">61</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-62">62</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-63">63</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-64">64</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-65">65</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-66">66</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-67">67</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-68">68</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-69">69</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-70">70</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-71">71</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-72">72</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-73">73</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-74">74</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-75">75</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-76">76</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-77">77</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-78">78</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-79">79</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-80">80</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-81">81</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-82">82</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-83">83</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-84">84</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-85">85</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-86">86</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-87">87</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-88">88</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-89">89</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-90">90</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-91">91</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-92">92</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-93">93</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-94">94</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-95">95</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-96">96</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-97">97</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-98">98</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-99">99</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-100">100</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-101">101</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-102">102</div><div class="crayon-num" data-line="crayon-59b5dbf049bc5804310445-103">103</div><div class="crayon-num crayon-striped-num" data-line="crayon-59b5dbf049bc5804310445-104">104</div></div>
+				</td>
+						<td class="crayon-code"><div class="crayon-pre" style="font-size: 12px !important; line-height: 15px !important; -moz-tab-size:4; -o-tab-size:4; -webkit-tab-size:4; tab-size:4;"><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-1"><span class="crayon-p">#include &lt;ESP8266WebServer.h&gt;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-2"><span class="crayon-p">#include &lt;FS.h&gt;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-3"><span class="crayon-p">#include &lt;ESP8266WiFi.h&gt;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-4">&nbsp;</div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-5"><span class="crayon-c">//Set Wifi ssid and password</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-6"><span class="crayon-t">char</span><span class="crayon-h"> </span><span class="crayon-v">ssid</span><span class="crayon-sy">[</span><span class="crayon-sy">]</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-s">"&lt;SSID&gt;"</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-7"><span class="crayon-t">char</span><span class="crayon-h"> </span><span class="crayon-v">pass</span><span class="crayon-sy">[</span><span class="crayon-sy">]</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-s">"&lt;password&gt;"</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-8">&nbsp;</div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-9"><span class="crayon-c">//Define the pins</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-10"><span class="crayon-t">int</span><span class="crayon-h"> </span><span class="crayon-v">STBY</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-cn">12</span><span class="crayon-sy">;</span><span class="crayon-h"> </span><span class="crayon-c">//standby</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-11"><span class="crayon-c">//Motor A</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-12"><span class="crayon-t">int</span><span class="crayon-h"> </span><span class="crayon-v">PWMA</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-cn">5</span><span class="crayon-sy">;</span><span class="crayon-h"> </span><span class="crayon-c">//Speed control</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-13"><span class="crayon-t">int</span><span class="crayon-h"> </span><span class="crayon-v">AIN1</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-cn">14</span><span class="crayon-sy">;</span><span class="crayon-h"> </span><span class="crayon-c">//Direction</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-14"><span class="crayon-t">int</span><span class="crayon-h"> </span><span class="crayon-v">AIN2</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-cn">16</span><span class="crayon-sy">;</span><span class="crayon-h"> </span><span class="crayon-c">//Direction</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-15"><span class="crayon-c">//Motor B</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-16"><span class="crayon-t">int</span><span class="crayon-h"> </span><span class="crayon-v">PWMB</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-cn">4</span><span class="crayon-sy">;</span><span class="crayon-h"> </span><span class="crayon-c">//Speed control</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-17"><span class="crayon-t">int</span><span class="crayon-h"> </span><span class="crayon-v">BIN1</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-cn">15</span><span class="crayon-sy">;</span><span class="crayon-h"> </span><span class="crayon-c">//Direction</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-18"><span class="crayon-t">int</span><span class="crayon-h"> </span><span class="crayon-v">BIN2</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-cn">13</span><span class="crayon-sy">;</span><span class="crayon-h"> </span><span class="crayon-c">//Direction</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-19">&nbsp;</div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-20"><span class="crayon-e">ESP8266WebServer </span><span class="crayon-e">server</span><span class="crayon-h"> </span><span class="crayon-sy">(</span><span class="crayon-cn">80</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-21">&nbsp;</div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-22"><span class="crayon-c">//This function takes the parameters passed in the URL(the x and y coordinates of the joystick)</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-23"><span class="crayon-c">//and sets the motor speed based on those parameters. </span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-24"><span class="crayon-t">void</span><span class="crayon-h"> </span><span class="crayon-e">handleJSData</span><span class="crayon-sy">(</span><span class="crayon-sy">)</span><span class="crayon-sy">{</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-25"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-t">boolean</span><span class="crayon-h"> </span><span class="crayon-v">yDir</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-26"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-t">int</span><span class="crayon-h"> </span><span class="crayon-v">x</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-v">server</span><span class="crayon-sy">.</span><span class="crayon-e">arg</span><span class="crayon-sy">(</span><span class="crayon-cn">0</span><span class="crayon-sy">)</span><span class="crayon-sy">.</span><span class="crayon-e">toInt</span><span class="crayon-sy">(</span><span class="crayon-sy">)</span><span class="crayon-h"> </span><span class="crayon-o">*</span><span class="crayon-h"> </span><span class="crayon-cn">10</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-27"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-t">int</span><span class="crayon-h"> </span><span class="crayon-v">y</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-v">server</span><span class="crayon-sy">.</span><span class="crayon-e">arg</span><span class="crayon-sy">(</span><span class="crayon-cn">1</span><span class="crayon-sy">)</span><span class="crayon-sy">.</span><span class="crayon-e">toInt</span><span class="crayon-sy">(</span><span class="crayon-sy">)</span><span class="crayon-h"> </span><span class="crayon-o">*</span><span class="crayon-h"> </span><span class="crayon-cn">10</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-28"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-t">int</span><span class="crayon-h"> </span><span class="crayon-v">aSpeed</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-e">abs</span><span class="crayon-sy">(</span><span class="crayon-v">y</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-29"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-t">int</span><span class="crayon-h"> </span><span class="crayon-v">bSpeed</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-e">abs</span><span class="crayon-sy">(</span><span class="crayon-v">y</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-30"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//set the direction based on y being negative or positive</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-31"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-st">if</span><span class="crayon-h"> </span><span class="crayon-sy">(</span><span class="crayon-h"> </span><span class="crayon-v">y</span><span class="crayon-h"> </span><span class="crayon-o">&lt;</span><span class="crayon-h"> </span><span class="crayon-cn">0</span><span class="crayon-h"> </span><span class="crayon-sy">)</span><span class="crayon-sy">{</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-32"><span class="crayon-h">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="crayon-v">yDir</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-cn">0</span><span class="crayon-sy">;</span><span class="crayon-h"> </span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-33"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-sy">}</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-34"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-st">else</span><span class="crayon-h"> </span><span class="crayon-sy">{</span><span class="crayon-h"> </span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-35"><span class="crayon-h">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="crayon-v">yDir</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-cn">1</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-36"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-sy">}</span><span class="crayon-h">&nbsp;&nbsp;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-37"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//adjust to speed of each each motor depending on the x-axis</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-38"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//it slows down one motor and speeds up the other proportionately </span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-39"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//based on the amount of turning</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-40"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">aSpeed</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-e">constrain</span><span class="crayon-sy">(</span><span class="crayon-v">aSpeed</span><span class="crayon-h"> </span><span class="crayon-o">+</span><span class="crayon-h"> </span><span class="crayon-v">x</span><span class="crayon-o">/</span><span class="crayon-cn">2</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-cn">0</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-cn">1023</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-41"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">bSpeed</span><span class="crayon-h"> </span><span class="crayon-o">=</span><span class="crayon-h"> </span><span class="crayon-e">constrain</span><span class="crayon-sy">(</span><span class="crayon-v">bSpeed</span><span class="crayon-h"> </span><span class="crayon-o">-</span><span class="crayon-h"> </span><span class="crayon-v">x</span><span class="crayon-o">/</span><span class="crayon-cn">2</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-cn">0</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-cn">1023</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-42">&nbsp;</div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-43"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//use the speed and direction values to turn the motors</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-44"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//if either motor is going in reverse from what is expected,</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-45"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//just change the 2 digitalWrite lines for both motors:</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-46"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//!ydir would become ydir, and ydir would become !ydir</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-47"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">digitalWrite</span><span class="crayon-sy">(</span><span class="crayon-v">STBY</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">HIGH</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span><span class="crayon-h">&nbsp;&nbsp;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-48"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//MotorA</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-49"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">digitalWrite</span><span class="crayon-sy">(</span><span class="crayon-v">AIN1</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-o">!</span><span class="crayon-v">yDir</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-50"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">digitalWrite</span><span class="crayon-sy">(</span><span class="crayon-v">AIN2</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">yDir</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-51"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">analogWrite</span><span class="crayon-sy">(</span><span class="crayon-v">PWMA</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">aSpeed</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-52"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//MotorB</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-53"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">digitalWrite</span><span class="crayon-sy">(</span><span class="crayon-v">BIN1</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-o">!</span><span class="crayon-v">yDir</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-54"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">digitalWrite</span><span class="crayon-sy">(</span><span class="crayon-v">BIN2</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">yDir</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-55"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">analogWrite</span><span class="crayon-sy">(</span><span class="crayon-v">PWMB</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">bSpeed</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-56">&nbsp;</div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-57"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//return an HTTP 200</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-58"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">server</span><span class="crayon-sy">.</span><span class="crayon-e">send</span><span class="crayon-sy">(</span><span class="crayon-cn">200</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-s">"text/plain"</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-s">""</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span><span class="crayon-h">&nbsp;&nbsp; </span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-59"><span class="crayon-sy">}</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-60">&nbsp;</div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-61"><span class="crayon-t">void</span><span class="crayon-h"> </span><span class="crayon-e">setup</span><span class="crayon-sy">(</span><span class="crayon-sy">)</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-62"><span class="crayon-sy">{</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-63"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">WiFi</span><span class="crayon-sy">.</span><span class="crayon-e">mode</span><span class="crayon-sy">(</span><span class="crayon-v">WIFI_STA</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-64"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">WiFi</span><span class="crayon-sy">.</span><span class="crayon-e">begin</span><span class="crayon-sy">(</span><span class="crayon-v">ssid</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">pass</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-65"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-st">while</span><span class="crayon-h"> </span><span class="crayon-sy">(</span><span class="crayon-v">WiFi</span><span class="crayon-sy">.</span><span class="crayon-e">status</span><span class="crayon-sy">(</span><span class="crayon-sy">)</span><span class="crayon-h"> </span><span class="crayon-o">!=</span><span class="crayon-h"> </span><span class="crayon-v">WL_CONNECTED</span><span class="crayon-sy">)</span><span class="crayon-h"> </span><span class="crayon-sy">{</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-66"><span class="crayon-h">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="crayon-e">delay</span><span class="crayon-sy">(</span><span class="crayon-cn">500</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-67"><span class="crayon-h">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="crayon-v">Serial</span><span class="crayon-sy">.</span><span class="crayon-e">print</span><span class="crayon-sy">(</span><span class="crayon-s">"."</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-68"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-sy">}</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-69">&nbsp;</div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-70"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">Serial</span><span class="crayon-sy">.</span><span class="crayon-e">println</span><span class="crayon-sy">(</span><span class="crayon-s">""</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-71"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">Serial</span><span class="crayon-sy">.</span><span class="crayon-e">println</span><span class="crayon-sy">(</span><span class="crayon-s">"WiFi connected"</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span><span class="crayon-h">&nbsp;&nbsp;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-72"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">Serial</span><span class="crayon-sy">.</span><span class="crayon-e">println</span><span class="crayon-sy">(</span><span class="crayon-s">"IP address: "</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-73"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">Serial</span><span class="crayon-sy">.</span><span class="crayon-e">println</span><span class="crayon-sy">(</span><span class="crayon-v">WiFi</span><span class="crayon-sy">.</span><span class="crayon-e">localIP</span><span class="crayon-sy">(</span><span class="crayon-sy">)</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-74"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//set the pins as outputs</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-75"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">pinMode</span><span class="crayon-sy">(</span><span class="crayon-v">STBY</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">OUTPUT</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-76">&nbsp;</div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-77"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">pinMode</span><span class="crayon-sy">(</span><span class="crayon-v">PWMA</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">OUTPUT</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-78"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">pinMode</span><span class="crayon-sy">(</span><span class="crayon-v">AIN1</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">OUTPUT</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-79"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">pinMode</span><span class="crayon-sy">(</span><span class="crayon-v">AIN2</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">OUTPUT</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-80">&nbsp;</div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-81"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">pinMode</span><span class="crayon-sy">(</span><span class="crayon-v">PWMB</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">OUTPUT</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-82"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">pinMode</span><span class="crayon-sy">(</span><span class="crayon-v">BIN1</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">OUTPUT</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-83"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-e">pinMode</span><span class="crayon-sy">(</span><span class="crayon-v">BIN2</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">OUTPUT</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span><span class="crayon-h">&nbsp;&nbsp;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-84"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">// Debug console</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-85"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">Serial</span><span class="crayon-sy">.</span><span class="crayon-e">begin</span><span class="crayon-sy">(</span><span class="crayon-cn">115200</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-86"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//initialize SPIFFS to be able to serve up the static HTML files. </span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-87"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-st">if</span><span class="crayon-h"> </span><span class="crayon-sy">(</span><span class="crayon-o">!</span><span class="crayon-v">SPIFFS</span><span class="crayon-sy">.</span><span class="crayon-e">begin</span><span class="crayon-sy">(</span><span class="crayon-sy">)</span><span class="crayon-sy">)</span><span class="crayon-sy">{</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-88"><span class="crayon-h">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="crayon-v">Serial</span><span class="crayon-sy">.</span><span class="crayon-e">println</span><span class="crayon-sy">(</span><span class="crayon-s">"SPIFFS Mount failed"</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-89"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-sy">}</span><span class="crayon-h"> </span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-90"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-st">else</span><span class="crayon-h"> </span><span class="crayon-sy">{</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-91"><span class="crayon-h">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="crayon-v">Serial</span><span class="crayon-sy">.</span><span class="crayon-e">println</span><span class="crayon-sy">(</span><span class="crayon-s">"SPIFFS Mount succesfull"</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-92"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-sy">}</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-93"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//set the static pages on SPIFFS for the html and js</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-94"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">server</span><span class="crayon-sy">.</span><span class="crayon-e">serveStatic</span><span class="crayon-sy">(</span><span class="crayon-s">"/"</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">SPIFFS</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-s">"/joystick.html"</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span><span class="crayon-h"> </span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-95"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">server</span><span class="crayon-sy">.</span><span class="crayon-e">serveStatic</span><span class="crayon-sy">(</span><span class="crayon-s">"/virtualjoystick.js"</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">SPIFFS</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-s">"/virtualjoystick.js"</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-96"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-c">//call handleJSData function when this URL is accessed by the js in the html file</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-97"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">server</span><span class="crayon-sy">.</span><span class="crayon-e">on</span><span class="crayon-sy">(</span><span class="crayon-s">"/jsData.html"</span><span class="crayon-sy">,</span><span class="crayon-h"> </span><span class="crayon-v">handleJSData</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span><span class="crayon-h">&nbsp;&nbsp;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-98"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">server</span><span class="crayon-sy">.</span><span class="crayon-e">begin</span><span class="crayon-sy">(</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-99"><span class="crayon-sy">}</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-100">&nbsp;</div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-101"><span class="crayon-t">void</span><span class="crayon-h"> </span><span class="crayon-e">loop</span><span class="crayon-sy">(</span><span class="crayon-sy">)</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-102"><span class="crayon-sy">{</span></div><div class="crayon-line" id="crayon-59b5dbf049bc5804310445-103"><span class="crayon-h">&nbsp;&nbsp;</span><span class="crayon-v">server</span><span class="crayon-sy">.</span><span class="crayon-e">handleClient</span><span class="crayon-sy">(</span><span class="crayon-sy">)</span><span class="crayon-sy">;</span><span class="crayon-h">&nbsp;&nbsp;</span></div><div class="crayon-line crayon-striped-line" id="crayon-59b5dbf049bc5804310445-104"><span class="crayon-sy">}</span></div></div></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+<!-- [Format Time: 0.0064 seconds] -->
+<p></p>
+<p>Once the code is uploaded, you can open up any recent web browser on your computer or mobile, and go to http://&lt;ESP IP Address&gt;/ and you should get a gray screen. Just touch or click on the screen and drag to move the joystick. The car should move accordingly. Again, if the direction of the car isn&#8217;t behaving as expected, then make the changes in the code by following the directions in the code comments around line 45.</p>
+<p>As always, if you have any comments or feedback post in the comments. It should be fairly easy to leave a comment. Feel free to use a fake email. You just won&#8217;t get any notifications of a reply.</p>
+<p>&nbsp;</p>
+	</div><!-- .entry-content -->
+		
+	<footer class="entry-footer">
+		<span class="tags-links"><span class="icon-tag"></span> Tag: <a href="https://automatedhome.party/tag/esp8266/" rel="tag">ESP8266</a>, <a href="https://automatedhome.party/tag/game/" rel="tag">Game</a>, <a href="https://automatedhome.party/tag/iot/" rel="tag">IOT</a>, <a href="https://automatedhome.party/tag/wemos-d1-mini/" rel="tag">Wemos D1 Mini</a></span><span class="comments-link"><a href="https://automatedhome.party/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/#comments">2 Comments</a></span>	</footer><!-- .entry-footer -->
+</article><!-- #post-## -->
+
+
+
+	<nav class="navigation post-navigation" role="navigation">
+		<h2 class="screen-reader-text">Post navigation</h2>
+		<div class="nav-links"><div class="nav-previous"><a href="https://automatedhome.party/2017/06/05/using-the-home-assistant-alert-component-with-telegram-acknowledge/" rel="prev">Previous Post<span>Using the Home Assistant Alert Component with Telegram Acknowledge</span></a></div></div>
+	</nav>				
+				
+<div id="comments" class="comments-area">
+
+	
+	
+		<h2 class="comments-title">
+			2 Replies to &ldquo;<span>WiFi Controlled Car with a Self Hosted HTML/JS Joystick Using a Wemos D1 Mini/ESP8266</span>&rdquo;		</h2>
+		
+		
+		<ol class="comment-list">
+					<li id="comment-40" class="comment even thread-even depth-1 parent">
+			<article id="div-comment-40" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img alt='' src='https://secure.gravatar.com/avatar/a8eab3a2a7ae64cc8dea5a9d2d12e1e8?s=32&#038;d=mm&#038;r=g' srcset='https://secure.gravatar.com/avatar/a8eab3a2a7ae64cc8dea5a9d2d12e1e8?s=64&amp;d=mm&amp;r=g 2x' class='avatar avatar-32 photo' height='32' width='32' />						<b class="fn">Grant</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://automatedhome.party/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/#comment-40">
+							<time datetime="2017-08-10T22:26:23+00:00">
+								August 10, 2017 at 10:26 pm							</time>
+						</a>
+											</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>I tried this and it worked. Just had to change the polarity of the motors like you said. Thank you!</p>
+				</div><!-- .comment-content -->
+
+				<div class="reply"><a rel='nofollow' class='comment-reply-link' href='https://automatedhome.party/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/?replytocom=40#respond' data-onclick='return addComment.moveForm( "div-comment-40", "40", "respond", "337" )' aria-label='Reply to Grant'>Reply</a></div>			</article><!-- .comment-body -->
+<ol class="children">
+		<li id="comment-41" class="comment byuser comment-author-admin bypostauthor odd alt depth-2">
+			<article id="div-comment-41" class="comment-body">
+				<footer class="comment-meta">
+					<div class="comment-author vcard">
+						<img alt='' src='https://secure.gravatar.com/avatar/bda408697be8f7f9e40ba0f0ee717115?s=32&#038;d=mm&#038;r=g' srcset='https://secure.gravatar.com/avatar/bda408697be8f7f9e40ba0f0ee717115?s=64&amp;d=mm&amp;r=g 2x' class='avatar avatar-32 photo' height='32' width='32' />						<b class="fn">Simit</b> <span class="says">says:</span>					</div><!-- .comment-author -->
+
+					<div class="comment-metadata">
+						<a href="https://automatedhome.party/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/#comment-41">
+							<time datetime="2017-08-11T22:21:44+00:00">
+								August 11, 2017 at 10:21 pm							</time>
+						</a>
+											</div><!-- .comment-metadata -->
+
+									</footer><!-- .comment-meta -->
+
+				<div class="comment-content">
+					<p>Glad to hear it worked for you.</p>
+				</div><!-- .comment-content -->
+
+				<div class="reply"><a rel='nofollow' class='comment-reply-link' href='https://automatedhome.party/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/?replytocom=41#respond' data-onclick='return addComment.moveForm( "div-comment-41", "41", "respond", "337" )' aria-label='Reply to Simit'>Reply</a></div>			</article><!-- .comment-body -->
+</li><!-- #comment-## -->
+</ol><!-- .children -->
+</li><!-- #comment-## -->
+		</ol><!-- .comment-list -->
+
+		
+	
+	
+		<div id="respond" class="comment-respond">
+		<h3 id="reply-title" class="comment-reply-title">Leave a Reply <small><a rel="nofollow" id="cancel-comment-reply-link" href="/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/#respond" style="display:none;">Cancel reply</a></small></h3>			<form action="https://automatedhome.party/wp-comments-post.php" method="post" id="commentform" class="comment-form" novalidate>
+				<p class="comment-notes"><span id="email-notes">Your email address will not be published.</span> Required fields are marked <span class="required">*</span></p><div id="wp-comment-wrap" class="wp-core-ui wp-editor-wrap tmce-active"><link rel='stylesheet' id='editor-buttons-css'  href='https://automatedhome.party/wp-includes/css/editor.min.css?ver=4.8.1' type='text/css' media='all' />
+<div id="wp-comment-editor-container" class="wp-editor-container"><textarea class="wp-editor-area" rows="15" autocomplete="off" cols="40" name="comment" id="comment"></textarea></div>
+</div>
+
+<p class="comment-form-author"><label for="author">Name <span class="required">*</span></label> <input id="author" name="author" type="text" value="" size="30" maxlength="245" aria-required='true' required='required' /></p>
+<p class="comment-form-email"><label for="email">Email <span class="required">*</span></label> <input id="email" name="email" type="email" value="" size="30" maxlength="100" aria-describedby="email-notes" aria-required='true' required='required' /></p>
+<p class="comment-form-url"><label for="url">Website</label> <input id="url" name="url" type="url" value="" size="30" maxlength="200" /></p>
+<p class="cptch_block"><span class="cptch_wrap cptch_math_actions">
+				<label class="cptch_label" for="cptch_input_95"><span class="cptch_span">2</span>
+					<span class="cptch_span">&nbsp;&minus;&nbsp;</span>
+					<span class="cptch_span">&#111;ne</span>
+					<span class="cptch_span">&nbsp;=&nbsp;</span>
+					<span class="cptch_span"><input id="cptch_input_95" class="cptch_input cptch_wp_comments" type="text" autocomplete="off" name="cptch_number" value="" maxlength="2" size="2" aria-required="true" required="required" style="margin-bottom:0;display:inline;font-size: 12px;width: 40px;" /></span>
+					<input type="hidden" name="cptch_result" value="P4o=" /><input type="hidden" name="cptch_time" value="1505090544" />
+					<input type="hidden" name="cptch_form" value="wp_comments" />
+				</label><span class="cptch_reload_button_wrap hide-if-no-js">
+					<noscript>
+						<style type="text/css">
+							.hide-if-no-js {
+								display: none !important;
+							}
+						</style>
+					</noscript>
+					<span class="cptch_reload_button dashicons dashicons-update"></span>
+				</span></span></p><p class="form-submit"><input name="submit" type="submit" id="submit" class="submit" value="Post Comment" /> <input type='hidden' name='comment_post_ID' value='337' id='comment_post_ID' />
+<input type='hidden' name='comment_parent' id='comment_parent' value='0' />
+</p>			</form>
+			</div><!-- #respond -->
+	
+</div><!-- #comments -->
+						
+		</main><!-- #main -->
+	</div><!-- #primary -->
+
+
+
+<div id="secondary" class="sidebar widget-area  widget-grey" role="complementary">
+
+		
+		
+		<aside id="tag_cloud-2" class="widget widget_tag_cloud"><h3 class="widget-title"><span>Tag Cloud</span></h3><div class="tagcloud"><a href="https://automatedhome.party/tag/alerts/" class="tag-cloud-link tag-link-17 tag-link-position-1" style="font-size: 8pt;" aria-label="Alerts (1 item)">Alerts</a>
+<a href="https://automatedhome.party/tag/display/" class="tag-cloud-link tag-link-14 tag-link-position-2" style="font-size: 8pt;" aria-label="Display (1 item)">Display</a>
+<a href="https://automatedhome.party/tag/esp8266/" class="tag-cloud-link tag-link-6 tag-link-position-3" style="font-size: 22pt;" aria-label="ESP8266 (7 items)">ESP8266</a>
+<a href="https://automatedhome.party/tag/fireplace/" class="tag-cloud-link tag-link-12 tag-link-position-4" style="font-size: 8pt;" aria-label="Fireplace (1 item)">Fireplace</a>
+<a href="https://automatedhome.party/tag/game/" class="tag-cloud-link tag-link-16 tag-link-position-5" style="font-size: 12.2pt;" aria-label="Game (2 items)">Game</a>
+<a href="https://automatedhome.party/tag/garage-door/" class="tag-cloud-link tag-link-10 tag-link-position-6" style="font-size: 12.2pt;" aria-label="Garage Door (2 items)">Garage Door</a>
+<a href="https://automatedhome.party/tag/home-assistant/" class="tag-cloud-link tag-link-8 tag-link-position-7" style="font-size: 17.333333333333pt;" aria-label="Home Assistant (4 items)">Home Assistant</a>
+<a href="https://automatedhome.party/tag/home-automation/" class="tag-cloud-link tag-link-9 tag-link-position-8" style="font-size: 15pt;" aria-label="Home Automation (3 items)">Home Automation</a>
+<a href="https://automatedhome.party/tag/iot/" class="tag-cloud-link tag-link-20 tag-link-position-9" style="font-size: 8pt;" aria-label="IOT (1 item)">IOT</a>
+<a href="https://automatedhome.party/tag/oled/" class="tag-cloud-link tag-link-13 tag-link-position-10" style="font-size: 8pt;" aria-label="OLED (1 item)">OLED</a>
+<a href="https://automatedhome.party/tag/telegram/" class="tag-cloud-link tag-link-18 tag-link-position-11" style="font-size: 8pt;" aria-label="Telegram (1 item)">Telegram</a>
+<a href="https://automatedhome.party/tag/wemos-d1-mini/" class="tag-cloud-link tag-link-7 tag-link-position-12" style="font-size: 22pt;" aria-label="Wemos D1 Mini (7 items)">Wemos D1 Mini</a></div>
+</aside><aside id="text-2" class="widget widget_text"><h3 class="widget-title"><span>Twitter and RSS</span></h3>			<div class="textwidget"><span class="synved-social-container synved-social-container-follow"><a class="synved-social-button synved-social-button-follow synved-social-size-16 synved-social-resolution-normal synved-social-provider-twitter nolightbox" data-provider="twitter" target="_blank" rel="nofollow" title="Follow Us" href="https://twitter.com/autom8homeparty" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;"><img alt="twitter" title="Follow Us" class="synved-share-image synved-social-image synved-social-image-follow" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/16x16/twitter.png" /></a><a class="synved-social-button synved-social-button-follow synved-social-size-16 synved-social-resolution-hidef synved-social-provider-twitter nolightbox" data-provider="twitter" target="_blank" rel="nofollow" title="Follow Us" href="https://twitter.com/autom8homeparty" style="font-size: 0px; width:16px;height:16px;margin:0;margin-bottom:5px;"><img alt="twitter" title="Follow Us" class="synved-share-image synved-social-image synved-social-image-follow" width="16" height="16" style="display: inline; width:16px;height:16px; margin: 0; padding: 0; border: none; box-shadow: none;" src="https://automatedhome.party/wp-content/plugins/social-media-feather/synved-social/addons/extra-icons/image/social/clearslate/32x32/twitter.png" /></a></span><a href="https://twitter.com/autom8homeparty">Follow Us On Twitter</a> 
+<br>
+<a href="http://automatedhome.party/feed/"><img src="http://automatedhome.party/wp-content/uploads/2017/05/04.png"> RSS Feed</a> 
+<br>
+<a href="http://automatedhome.party/comments/feed/"><img src="http://automatedhome.party/wp-content/uploads/2017/05/04.png"> RSS Comments Feed</a> </div>
+		</aside><aside id="sp_widget_post_slider-2" class="widget widget_sp_widget_post_slider"><h3 class="widget-title"><span>Check out my other posts:</span></h3>
+		    <script type="text/javascript">
+		    jQuery(document).ready(function() {
+				jQuery("#sp-widget-post-slider-59b5dbf05dce3").slick({
+			        dots: false,
+			        infinite: true,
+			        slidesToShow: 1,
+			        slidesToScroll: 1,
+			        autoplay: true,
+		            speed: 600,
+		            autoplaySpeed: 4000,
+		            arrows: true,
+		            prevArrow: "<div class='slick-prev'><i class='fa fa-angle-left'></i></div>",
+		            nextArrow: "<div class='slick-next'><i class='fa fa-angle-right'></i></div>",
+		        });
+
+		    });
+		    </script><div id="sp-widget-post-slider-59b5dbf05dce3" class="sp-widget-post-slider-section"><div class="widget-post-slider"><a href="https://automatedhome.party/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/"><img width="360" height="250" src="https://automatedhome.party/wp-content/uploads/2017/07/img_3709-360x250.jpg" class="wps-image wp-post-image" alt="" /></a><div class="wps-caption"><a href="https://automatedhome.party/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/">WiFi Controlled Car with a Self Hosted HTML/JS Joystick Using a Wemos D1 Mini/ESP8266</a></div></div><div class="widget-post-slider"><a href="https://automatedhome.party/2017/06/05/using-the-home-assistant-alert-component-with-telegram-acknowledge/"><img width="360" height="154" src="https://automatedhome.party/wp-content/uploads/2017/06/garageAlert-360x154.png" class="wps-image wp-post-image" alt="" /></a><div class="wps-caption"><a href="https://automatedhome.party/2017/06/05/using-the-home-assistant-alert-component-with-telegram-acknowledge/">Using the Home Assistant Alert Component with Telegram Acknowledge</a></div></div><div class="widget-post-slider"><a href="https://automatedhome.party/2017/05/29/windywire-buzz-wire-game-using-a-wemos-d1-miniesp8266/"><img width="360" height="250" src="https://automatedhome.party/wp-content/uploads/2017/05/IMG_2744-360x250.jpg" class="wps-image wp-post-image" alt="" /></a><div class="wps-caption"><a href="https://automatedhome.party/2017/05/29/windywire-buzz-wire-game-using-a-wemos-d1-miniesp8266/">WindyWire (Buzz Wire) Game Using a Wemos D1 Mini/ESP8266</a></div></div><div class="widget-post-slider"><a href="https://automatedhome.party/2017/04/17/connect-an-inexpensive-oled-display-to-a-esp8266wemos-d1-mini/"><img width="360" height="250" src="https://automatedhome.party/wp-content/uploads/2017/04/WemosOLED-360x250.png" class="wps-image wp-post-image" alt="" /></a><div class="wps-caption"><a href="https://automatedhome.party/2017/04/17/connect-an-inexpensive-oled-display-to-a-esp8266wemos-d1-mini/">Connect an inexpensive OLED display to a ESP8266/Wemos D1 Mini</a></div></div><div class="widget-post-slider"><a href="https://automatedhome.party/2017/03/24/current-monitor-and-water-sensor-for-sump-pump/"><img width="360" height="250" src="https://automatedhome.party/wp-content/uploads/2017/03/IMG_2039-360x250.jpg" class="wps-image wp-post-image" alt="" /></a><div class="wps-caption"><a href="https://automatedhome.party/2017/03/24/current-monitor-and-water-sensor-for-sump-pump/">Current Monitor and Water Sensor for Sump Pump</a></div></div></div></aside>		<aside id="recent-posts-3" class="widget widget_recent_entries">		<h3 class="widget-title"><span>Recent Posts</span></h3>		<ul>
+					<li>
+				<a href="https://automatedhome.party/2017/07/15/wifi-controlled-car-with-a-self-hosted-htmljs-joystick-using-a-wemos-d1-miniesp8266/">WiFi Controlled Car with a Self Hosted HTML/JS Joystick Using a Wemos D1 Mini/ESP8266</a>
+						</li>
+					<li>
+				<a href="https://automatedhome.party/2017/06/05/using-the-home-assistant-alert-component-with-telegram-acknowledge/">Using the Home Assistant Alert Component with Telegram Acknowledge</a>
+						</li>
+					<li>
+				<a href="https://automatedhome.party/2017/05/29/windywire-buzz-wire-game-using-a-wemos-d1-miniesp8266/">WindyWire (Buzz Wire) Game Using a Wemos D1 Mini/ESP8266</a>
+						</li>
+					<li>
+				<a href="https://automatedhome.party/2017/04/17/connect-an-inexpensive-oled-display-to-a-esp8266wemos-d1-mini/">Connect an inexpensive OLED display to a ESP8266/Wemos D1 Mini</a>
+						</li>
+					<li>
+				<a href="https://automatedhome.party/2017/03/24/current-monitor-and-water-sensor-for-sump-pump/">Current Monitor and Water Sensor for Sump Pump</a>
+						</li>
+				</ul>
+		</aside>			
+		
+</div><!-- #secondary .widget-area -->
+		
+		</div><!-- .container -->
+	</div><!-- #content -->
+
+	<footer id="colophon" class="site-footer" role="contentinfo">
+		
+		<div class="footer widget-area" role="complementary">
+			<div class="container">
+				<div class="row">
+					<div class="col-4" id="footer-area-left">
+											</div>	
+					<div class="col-4" id="footer-area-center">
+											</div>
+					<div class="col-4" id="footer-area-right">
+											</div>
+				</div><!-- .row -->
+			</div>
+		</div>
+		
+		<div class="footer-copy">
+			<div class="container">
+				<div class="row">
+					<div class="col-6">
+						<div class="site-info">
+							&copy; 2017 Automated Home Party							<span class="sep">/</span>
+							<a href="http://wordpress.org/">Powered by WordPress</a>
+							<span class="sep"> / </span>
+							<a href="http://www.designlabthemes.com/">Theme by Design Lab</a>
+						</div>
+					</div>
+					<div class="col-6">
+											</div>
+				</div><!-- .row -->
+			</div>
+		</div>
+	</footer><!-- #colophon -->
+	
+			<a href="#masthead" id="scroll-up"><span class="icon-arrow-up"></span></a>
+		
+</div><!-- #page -->
+
+<script type='text/javascript' src='https://automatedhome.party/wp-content/plugins/tinymce-comment-field/js/tinymce-comment-field.js?ver=1.9'></script>
+<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/comment-reply.min.js?ver=4.8.1'></script>
+<script type='text/javascript' src='https://automatedhome.party/wp-content/plugins/tinymce-comment-field/js/comment-reply-4.8.0.js?ver=1.9'></script>
+<script type='text/javascript' src='https://automatedhome.party/wp-content/plugins/widget-post-slider/assets/js/slick.min.js'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var zerospam = {"key":"9I@3blvBzM7^sq@5uAu6Goao%xWq8ZyPBytK$@WHj(vbxg0EW!x#!Psdom#l&PKz"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://automatedhome.party/wp-content/plugins/zero-spam/js/zerospam.js?ver=3.0.6'></script>
+<script type='text/javascript' src='https://automatedhome.party/wp-content/themes/xmag/js/main.js?ver=20170211'></script>
+<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/wp-embed.min.js?ver=4.8.1'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var cptch_vars = {"nonce":"7d760f7b74","ajaxurl":"https:\/\/automatedhome.party\/wp-admin\/admin-ajax.php","enlarge":""};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://automatedhome.party/wp-content/plugins/captcha/js/front_end_script.js?ver=4.8.1'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var userSettings = {"url":"\/","uid":"0","time":"1505090544","secure":"1"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/utils.min.js?ver=4.8.1'></script>
+<script type='text/javascript' src='https://automatedhome.party/wp-admin/js/editor.min.js?ver=4.8.1'></script>
+<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/wp-a11y.min.js?ver=4.8.1'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var wpLinkL10n = {"title":"Insert\/edit link","update":"Update","save":"Add Link","noTitle":"(no title)","noMatchesFound":"No results found.","linkSelected":"Link selected.","linkInserted":"Link inserted."};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/wplink.min.js?ver=4.8.1'></script>
+<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/jquery/ui/core.min.js?ver=1.11.4'></script>
+<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/jquery/ui/widget.min.js?ver=1.11.4'></script>
+<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/jquery/ui/position.min.js?ver=1.11.4'></script>
+<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/jquery/ui/menu.min.js?ver=1.11.4'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var uiAutocompleteL10n = {"noResults":"No results found.","oneResult":"1 result found. Use up and down arrow keys to navigate.","manyResults":"%d results found. Use up and down arrow keys to navigate.","itemSelected":"Item selected."};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/jquery/ui/autocomplete.min.js?ver=1.11.4'></script>
+
+		<script type="text/javascript">
+		tinyMCEPreInit = {
+			baseURL: "https://automatedhome.party/wp-includes/js/tinymce",
+			suffix: ".min",
+						mceInit: {'comment':{theme:"modern",skin:"lightgray",language:"en",formats:{alignleft: [{selector: "p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li", styles: {textAlign:"left"}},{selector: "img,table,dl.wp-caption", classes: "alignleft"}],aligncenter: [{selector: "p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li", styles: {textAlign:"center"}},{selector: "img,table,dl.wp-caption", classes: "aligncenter"}],alignright: [{selector: "p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li", styles: {textAlign:"right"}},{selector: "img,table,dl.wp-caption", classes: "alignright"}],strikethrough: {inline: "del"}},relative_urls:false,remove_script_host:false,convert_urls:false,browser_spellcheck:true,fix_list_elements:true,entities:"38,amp,60,lt,62,gt",entity_encoding:"raw",keep_styles:false,cache_suffix:"wp-mce-4603-20170530",resize:"vertical",menubar:false,branding:false,preview_styles:"font-family font-size font-weight font-style text-decoration text-transform",end_container_on_empty_block:true,wpeditimage_html5_captions:true,wp_lang_attr:"en-US",wp_shortcut_labels:{"Heading 1":"access1","Heading 2":"access2","Heading 3":"access3","Heading 4":"access4","Heading 5":"access5","Heading 6":"access6","Paragraph":"access7","Blockquote":"accessQ","Underline":"metaU","Strikethrough":"accessD","Bold":"metaB","Italic":"metaI","Code":"accessX","Align center":"accessC","Align right":"accessR","Align left":"accessL","Justify":"accessJ","Cut":"metaX","Copy":"metaC","Paste":"metaV","Select all":"metaA","Undo":"metaZ","Redo":"metaY","Bullet list":"accessU","Numbered list":"accessO","Insert\/edit image":"accessM","Remove link":"accessS","Toolbar Toggle":"accessZ","Insert Read More tag":"accessT","Insert Page Break tag":"accessP","Distraction-free writing mode":"accessW","Keyboard Shortcuts":"accessH"},content_css:"http://automatedhome.party/wp-content/uploads/tinymce-comment-field-editor.css?t=1490140139",plugins:"colorpicker,lists,fullscreen,image,wordpress,wpeditimage,wplink",selector:"#comment",wpautop:true,indent:false,toolbar1:"bold,italic,underline,strikethrough,cut,copy,paste,blockquote,link,unlink",toolbar2:"",toolbar3:"",toolbar4:"",tabfocus_elements:":prev,:next",body_class:"comment post-type-post post-status-publish post-format-standard page-template-default locale-en-us",height:"200",directionality:"ltr"}},
+			qtInit: {},
+			ref: {plugins:"colorpicker,lists,fullscreen,image,wordpress,wpeditimage,wplink",theme:"modern",language:"en"},
+			load_ext: function(url,lang){var sl=tinymce.ScriptLoader;sl.markDone(url+'/langs/'+lang+'.js');sl.markDone(url+'/langs/'+lang+'_dlg.js');}
+		};
+		</script>
+		<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/tinymce/tinymce.min.js?ver=4603-20170530'></script>
+<script type='text/javascript' src='https://automatedhome.party/wp-includes/js/tinymce/plugins/compat3x/plugin.min.js?ver=4603-20170530'></script>
+<script type='text/javascript'>
+tinymce.addI18n( 'en', {"Ok":"OK","Bullet list":"Bulleted list","Insert\/Edit code sample":"Insert\/edit code sample","Url":"URL","Spellcheck":"Check Spelling","Row properties":"Table row properties","Cell properties":"Table cell properties","Paste row before":"Paste table row before","Paste row after":"Paste table row after","Cut row":"Cut table row","Copy row":"Copy table row","Merge cells":"Merge table cells","Split cell":"Split table cell","Paste is now in plain text mode. Contents will now be pasted as plain text until you toggle this option off.":"Paste is now in plain text mode. Contents will now be pasted as plain text until you toggle this option off.\n\nIf you\u2019re looking to paste rich content from Microsoft Word, try turning this option off. The editor will clean up text pasted from Word automatically.","Rich Text Area. Press ALT-F9 for menu. Press ALT-F10 for toolbar. Press ALT-0 for help":"Rich Text Area. Press Alt-Shift-H for help.","You have unsaved changes are you sure you want to navigate away?":"The changes you made will be lost if you navigate away from this page.","Your browser doesn't support direct access to the clipboard. Please use the Ctrl+X\/C\/V keyboard shortcuts instead.":"Your browser does not support direct access to the clipboard. Please use keyboard shortcuts or your browser\u2019s edit menu instead.","Edit ":"Edit"});
+tinymce.ScriptLoader.markDone( 'https://automatedhome.party/wp-includes/js/tinymce/langs/en.js' );
+</script>
+		<script type="text/javascript">
+		var ajaxurl = "/wp-admin/admin-ajax.php";
+		( function() {
+			var init, id, $wrap;
+
+			if ( typeof tinymce !== 'undefined' ) {
+				if ( tinymce.Env.ie && tinymce.Env.ie < 11 ) {
+					tinymce.$( '.wp-editor-wrap ' ).removeClass( 'tmce-active' ).addClass( 'html-active' );
+					return;
+				}
+
+				for ( id in tinyMCEPreInit.mceInit ) {
+					init = tinyMCEPreInit.mceInit[id];
+					$wrap = tinymce.$( '#wp-' + id + '-wrap' );
+
+					if ( ( $wrap.hasClass( 'tmce-active' ) || ! tinyMCEPreInit.qtInit.hasOwnProperty( id ) ) && ! init.wp_skip_init ) {
+						tinymce.init( init );
+
+						if ( ! window.wpActiveEditor ) {
+							window.wpActiveEditor = id;
+						}
+					}
+				}
+			}
+
+			if ( typeof quicktags !== 'undefined' ) {
+				for ( id in tinyMCEPreInit.qtInit ) {
+					quicktags( tinyMCEPreInit.qtInit[id] );
+
+					if ( ! window.wpActiveEditor ) {
+						window.wpActiveEditor = id;
+					}
+				}
+			}
+		}());
+		</script>
+				<div id="wp-link-backdrop" style="display: none"></div>
+		<div id="wp-link-wrap" class="wp-core-ui" style="display: none" role="dialog" aria-labelledby="link-modal-title">
+		<form id="wp-link" tabindex="-1">
+		<input type="hidden" id="_ajax_linking_nonce" name="_ajax_linking_nonce" value="94032d865b" />		<h1 id="link-modal-title">Insert/edit link</h1>
+		<button type="button" id="wp-link-close"><span class="screen-reader-text">Close</span></button>
+		<div id="link-selector">
+			<div id="link-options">
+				<p class="howto" id="wplink-enter-url">Enter the destination URL</p>
+				<div>
+					<label><span>URL</span>
+					<input id="wp-link-url" type="text" aria-describedby="wplink-enter-url" /></label>
+				</div>
+				<div class="wp-link-text-field">
+					<label><span>Link Text</span>
+					<input id="wp-link-text" type="text" /></label>
+				</div>
+				<div class="link-target">
+					<label><span></span>
+					<input type="checkbox" id="wp-link-target" /> Open link in a new tab</label>
+				</div>
+			</div>
+			<p class="howto" id="wplink-link-existing-content">Or link to existing content</p>
+			<div id="search-panel">
+				<div class="link-search-wrapper">
+					<label>
+						<span class="search-label">Search</span>
+						<input type="search" id="wp-link-search" class="link-search-field" autocomplete="off" aria-describedby="wplink-link-existing-content" />
+						<span class="spinner"></span>
+					</label>
+				</div>
+				<div id="search-results" class="query-results" tabindex="0">
+					<ul></ul>
+					<div class="river-waiting">
+						<span class="spinner"></span>
+					</div>
+				</div>
+				<div id="most-recent-results" class="query-results" tabindex="0">
+					<div class="query-notice" id="query-notice-message">
+						<em class="query-notice-default">No search term specified. Showing recent items.</em>
+						<em class="query-notice-hint screen-reader-text">Search or use up and down arrow keys to select an item.</em>
+					</div>
+					<ul></ul>
+					<div class="river-waiting">
+						<span class="spinner"></span>
+					</div>
+ 				</div>
+ 			</div>
+		</div>
+		<div class="submitbox">
+			<div id="wp-link-cancel">
+				<button type="button" class="button">Cancel</button>
+			</div>
+			<div id="wp-link-update">
+				<input type="submit" value="Add Link" class="button button-primary" id="wp-link-submit" name="wp-link-submit">
+			</div>
+		</div>
+		</form>
+		</div>
+				<script>
+		!function(a,b){"undefined"!=typeof a&&"undefined"!=typeof b&&a(function(){b.addButton("sofbg-axcell","&para;",function(b,c){
+		var d=a(c),e=a.trim(d.val()),f="table|thead|tfoot|caption|col|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|form|map|area|blockquote|" +
+		"address|math|style|p|h[1-6]|hr|fieldset|legend|tmadv|section|article|aside|hgroup|header|footer|nav|figure|figcaption|details|menu|summary";
+		-1!==e.indexOf("</p>")&&-1===e.indexOf("\n\n")&&(e=e.replace(new RegExp("<(?:"+f+")(?: [^>]*)?>","gi"),"\n$&"),
+		e=e.replace(new RegExp("</(?:"+f+")>","gi"),"$&\n"),e=e.replace(/(<br(?: [^>]*)?>)[\r\n\t]*/gi,"$1\n"),
+		e=e.replace(/>\n[\r\n\t]+</g,">\n<"),e=e.replace(/^<li/gm,"	<li"),e=e.replace(/<td>\u00a0<\/td>/g,"<td>&nbsp;</td>"),
+		d.val(a.trim(e)))},"","","Fix line breaks")})}(window.jQuery,window.QTags);
+		</script>
+		
+</body>
+</html>

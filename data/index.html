@@ -1,17 +1,303 @@
-<html>
-<meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-<font size=5em font-family=sans-serif>
-  <form>
-    String(note)
-    Welcome to the light alarm clock (19May2016 Version).
-    <br>
-    <br>
-    Time is String(startingHour):String(startingMinute):String(startingSecond) PDT (Valid Mar to Nov), which is an epoch of String(startingEpoch) seconds.
-    <br>
-    <br>
-    Please enter the wakeup time 30 mins before final alarm time.
-    <p>
-      <input type=time name=JTime onchange="this.form.submit()" style="height:50px; width:400px">
-    </form>
-  </font>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<!-- SET UP VARIABLES-->
+<script>
+	var useNPT = false;
+	var useOfflineJQuery = true;
+
+	var hostIPAddress;
+	var connection;
+	var ColorValues = [0,0,0];
+	var lastChanged = "ManualWhite";
+	var dataSenderTimer;
+	var currentTime;
+	var currentEpoch;
+</script>
+
+<!-- Javascript Loading Function (Must be before attempting to load) -->
+<p> <!--Needed to make it not empty text right now -->
+<script>
+	function loadJS(file) {
+		 var jsElm = document.createElement("script"); // DOM: Create the script element
+		 //jsElm.type = "application/javascript"; // set the type attribute
+		 jsElm.src = file; // make the script element load file
+		 document.body.appendChild(jsElm); // finally insert the element to the body element in order to load the script
+	}
+</script>
+<script>
+	function loadStyleSheet(file) {
+		 var jsElm = document.createElement("link"); // DOM: Create the script element
+		 //jsElm.type = "text/css"; // set the type attribute
+		 jsElm.href = file; // make the script element load file
+		 jsElm.rel = "stylesheet";
+		 document.body.appendChild(jsElm); // finally insert the element to the body element in order to load the script
+	}
+</script>
+
+<!-- Document Header & Load JQuery -->
+
+<head>
+	<title>Light Alarm Clock</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<script>
+	/*if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) )
+	{
+ 		useOfflineJQuery = true;
+	}
+	else
+	{
+		useOfflineJQuery = false;
+	}*/
+
+	if (useOfflineJQuery) {
+		loadJS('jquery-1.6.4.min.js')
+		loadJS('jquery.mobile-1.1.2.min.js')
+		loadStyleSheet('jquery.mobile-1.1.2.min.js')
+		loadStyleSheet('jquery.mobile-1.1.2.min.css')
+  } else {
+		loadJS('https://code.jquery.com/jquery-1.6.4.min.js')
+		loadJS('https://code.jquery.com/mobile/1.1.2/jquery.mobile-1.1.2.min.js')
+		loadStyleSheet('https://code.jquery.com/mobile/1.1.2/jquery.mobile-1.1.2.min.js')
+		loadStyleSheet('https://code.jquery.com/mobile/1.1.2/jquery.mobile-1.1.2.min.css')
+  }
+</script>
+	<!-- Get Time -->
+
+
+<!-- ????? -->
+<!--
+<script>
+	$(document).bind('mobileinit',function(){
+		$.mobile.changePage.defaults.changeHash = false;
+		$.mobile.hashListeningEnabled = false;
+		$.mobile.pushStateEnabled = false;
+	});
+</script>
+
+-->
+
+
+
+</script>
+
+
+<!--
+function loadJQueryOnline() {
+	<script>alert("Online");</script>
+	<script src="https://code.jquery.com/jquery-1.6.4.min.js"></script>
+	<script src="https://code.jquery.com/mobile/1.1.2/jquery.mobile-1.1.2.min.js"></script>
+	<link href="https://code.jquery.com/mobile/1.1.2/jquery.mobile-1.1.2.min.js" rel="stylesheet"/>
+	<link href="https://code.jquery.com/mobile/1.1.2/jquery.mobile-1.1.2.min.css" rel="stylesheet" />
+}
+
+function loadJQueryOffline() {
+	<script src="jquery-1.6.4.min.js"></script>
+	<script src="jquery.mobile-1.1.2.min.js"></script>
+	<link href="jquery.mobile.st-1.1.2.min.css" rel="stylesheet"/>
+	<link href="jquery.mobile-1.1.2.min.css" rel="stylesheet" />
+	<script>alert("Offline");</script>
+}-->
+<script>
+//--------- On Open ---------//
+function onOpen(evt) {
+	//alert("opened");
+	document.getElementById("messages").innerHTML = "Connected";
+	dataSenderTimer = setInterval(sendDataTimer ,100);	//Set up running sendDataTimer function every 100ms
+	setTimeout(function(){}, 1000);	//Wait 500ms before proceeding
+	//connection.send("getNTP");	//Send "getNTP" to the esp8266
+}
+
+//--------- On Close ---------//
+function onClose(evt) {
+	clearInterval(dataSenderTimer);	//Stops from running sendDataTimer function every ~100ms
+}
+
+//--------- On Error ---------//
+function onError(evt) {
+	 //alert(evt.data);
+}
+
+//--------- On Receiving Message From the Esp8266 ---------//
+function onMessage(evt) {
+	if(evt.data.startsWith("Time Message:"))
+	{
+		document.getElementById("timeMessage").innerHTML = evt.data;
+	}
+	else
+	{
+		document.getElementById("messages").innerHTML = evt.data;
+	}
+}
+
+//--------- Data Timer (runs every ~100ms as per the "setInterval" call in the onOpen function) ---------//
+function sendDataTimer() {
+	//alert("test")
+	//console.log(document.querySelector(":focus"));
+	var ColorChanged = false;
+	if (lastChanged == "ManualWhite")
+	{
+		var newColorValue = document.getElementById("WhiteSlider-range").value;
+		for (i = 0; i < ColorValues.length; i++) {
+			if (ColorValues[i] != newColorValue)
+			{
+				ColorValues[i] = newColorValue;
+				ColorChanged = true;
+			}
+		}
+		//document.getElementById("WhiteSlider-range").value = newColorValue;
+		document.getElementById("RedSlider-range").value = newColorValue;
+		document.getElementById("GreenSlider-range").value = newColorValue;
+		document.getElementById("BlueSlider-range").value = newColorValue;
+		//document.getElementById("ColorPicker-range").value = RGBtoHex(newColorValue);
+	}
+	if (lastChanged == "ManualRGB")
+	{
+		var newColorValues = [document.getElementById("RedSlider-range").value, document.getElementById("GreenSlider-range").value, document.getElementById("BlueSlider-range").value];
+		for (i = 0; i < ColorValues.length; i++) {
+			if (ColorValues[i] != newColorValues[i])
+			{
+				ColorValues[i] = newColorValues[i];
+				ColorChanged = true;
+			}
+		}
+
+
+		document.getElementById("WhiteSlider-range").value = Math.round((parseInt(newColorValues[0])+parseInt(newColorValues[1])+parseInt(newColorValues[2]))/3);
+		//document.getElementById("RedSlider-range").value = newColorValue;
+		//document.getElementById("GreenSlider-range").value = newColorValue;
+		//document.getElementById("BlueSlider-range").value = newColorValue;
+		//document.getElementById("ColorPicker-range").value = RGBtoHex(newColorValues);
+	}
+	if (lastChanged == "ColorPicker")
+	{
+		var newColorValues = hexToRGB(document.getElementById("ColorPicker-range").value);
+		for (i = 0; i < ColorValues.length; i++) {
+			if (ColorValues[i] != newColorValues[i])
+			{
+				ColorValues[i] = newColorValues[i];
+				ColorChanged = true;
+			}
+		}
+		document.getElementById("WhiteSlider-range").value = Math.round((parseInt(newColorValues[0])+parseInt(newColorValues[1])+parseInt(newColorValues[2]))/3);
+		document.getElementById("RedSlider-range").value = newColorValues[0];
+		document.getElementById("GreenSlider-range").value = newColorValues[1];
+		document.getElementById("BlueSlider-range").value = newColorValues[2];
+		//console.log(typeof hexToRGB(document.getElementById("ColorPicker-range").value))
+		//document.getElementById("ColorPicker-range").value = RGBtoHex(newColorValues);
+	}
+	if (ColorChanged)
+	{
+		connection.send("RGB_SET|"+ColorValues[0]+"|"+ColorValues[1]+"|"+ColorValues[2]);
+
+	}
+}
+
+// Send reset command to esp8266 //
+function resetFn() {
+	var toSend = "RESET";
+	connection.send(toSend);
+};
+
+// Create Websocket //
+function createWebsocket(){
+	document.getElementById("messages").innerHTML = "Connecting..."; //Display message
+	//var text = document.getElementById('ip').value;
+	 hostIPAddress = "ws://" + location.host + ":81/"; // eg ws://192.168.1.1:81/
+	 //document.getElementById("timeMessage").innerHTML = "IP value changed to:"+hostIPAddress;
+	 console.log("IP value changed to:"+hostIPAddress);
+	connection = new WebSocket(hostIPAddress, ['arduino']);
+	connection.onopen = function(evt) { onOpen(evt) };
+	connection.onclose = function(evt) { onClose(evt) };
+	connection.onmessage = function(evt) { onMessage(evt) };
+	connection.onerror = function(evt) { onError(evt) };
+}
+
+
+function hexToRGB(hex) {
+	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	return result ? [parseInt(result[1], 16)*4, parseInt(result[2], 16)*4, parseInt(result[3], 16)*4] : null;
+}
+
+/* Doesn't work
+function RGBtoHex(R,G,B) {
+	return  "#" + R(R << 16) | (G << 8) | B;
+}
+*/
+/*
+function sendColor(newValue)
+{
+		var RGBColor = hexToRGB(newValue);
+		console.log(RGBColor);
+		showValueR(Math.round(RGBColor.r/255*1023));
+		showValueG(Math.round(RGBColor.g/255*1023));
+		showValueB(Math.round(RGBColor.b/255*1023));
+}
+
+function rainbowFn() {
+	var toSend = "RAINBOW";
+	connection.send(toSend);
+};
+*/
+
+function sendEpoch() {
+	currentTime = new Date(); //Get current time from the client (ie. phone)
+	currentEpoch = currentTime.getTime();
+	console.log("Current time is: " + currentTime + ", which is an epoch of " + currentEpoch);
+	console.log("CurrentTime_SET|" + String(currentEpoch) + "|" + String(currentTime.getTimezoneOffset()));
+	connection.send("CurrentTime_SET|" + String(currentEpoch) + "|" + String(currentTime.getTimezoneOffset()));
+}
+</script>
+	  </head>
+	<body>
+
+		<div data-role="page" id="page1">
+			<div data-role="header">
+				<h1>Light Alarm Clock</h1>
+			</div>
+			<div data-role="content">
+				<div data-role="fieldcontain">
+					Time is <script>document.write(currentTime)</script>.
+			  </div>
+				<div data-role="fieldcontain">
+				  <label for="time1">Wakeup Time</label>
+				  <form>
+				  <input type=time name=JTime value="06:00" onfocus='sendEpoch()' onchange="this.form.submit()" >
+				  </form>
+				<div data-role="fieldcontain" id="WhiteSlider">
+					<label for="WhiteSlider-range">White</label>
+					<input type="range" id="WhiteSlider-range" onchange='(function(){lastChanged="ManualWhite"})()' value="0" min="0" max="1024" step="1" data-highlight="true" />
+				</div>
+				<div data-role="fieldcontain" id="RedSlider">
+					<label for="RedSlider-range">Red</label>
+					<input type="range" id="RedSlider-range" onchange='(function(){lastChanged="ManualRGB"})()' value="0" min="0" max="1024" step="1" data-highlight="true" />
+				</div>
+				<div data-role="fieldcontain" id="GreenSlider">
+					<label for="GreenSlider-range">Green</label>
+					<input type="range" id="GreenSlider-range" onchange='(function(){lastChanged="ManualRGB"})()' value="0" min="0" max="1024" step="1" data-highlight="true" />
+				</div>
+				<div data-role="fieldcontain" id="BlueSlider">
+					<label for="BlueSlider-range">Blue</label>
+					<input type="range" id="BlueSlider-range" onchange='(function(){lastChanged="ManualRGB"})()' value="0" min="0" max="1024" step="1" data-highlight="true" />
+				</div>
+				 <div data-role="fieldcontain" id="ColorPicker">
+				 <label for="ColorPicker-range">Color Picker</label>
+					<input type="Color" id="ColorPicker-range" onchange='(function(){lastChanged="ColorPicker"})()' value="#ffffff" style="width:85%;">
+			</div>
+			<div data-role="fieldcontain">
+				<label for="text3">Set time!!!</label>
+				<input type="button" onclick='sendEpoch()' />
+			</div>
+		<div data-role="fieldcontain">
+			<label for="text2">Reconnect</label>
+			<input type="button" onclick='createWebsocket()' />
+		</div>
+			<p id="messages">	-	</p>
+			<p id="timeMessage">	-	</p>
+			<div data-role="footer">
+				<h1>Version 2017.10.07</h1>
+			</div>
+		</div>
+	</body>
+	<script>createWebsocket()</script>
 </html>

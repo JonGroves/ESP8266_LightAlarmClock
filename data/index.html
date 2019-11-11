@@ -103,14 +103,14 @@ function loadJQueryOffline() {
 function onOpen(evt) {
 	//alert("opened");
 	document.getElementById("messages").innerHTML = "Connected";
-	dataSenderTimer = setInterval(sendDataTimer ,100);	//Set up running sendDataTimer function every 100ms
-	setTimeout(function(){}, 1000);	//Wait 500ms before proceeding
+	dataSenderTimer = setInterval(sendDataTimer,50);	//Set up running sendDataTimer function every 50ms
+	setTimeout(function(){}, 1000);	//Wait 1000ms before proceeding
 	//connection.send("getNTP");	//Send "getNTP" to the esp8266
 }
 
 //--------- On Close ---------//
 function onClose(evt) {
-	clearInterval(dataSenderTimer);	//Stops from running sendDataTimer function every ~100ms
+	clearInterval(dataSenderTimer);	//Stops from running sendDataTimer function every ~50ms
 }
 
 //--------- On Error ---------//
@@ -130,7 +130,7 @@ function onMessage(evt) {
 	}
 }
 
-//--------- Data Timer (runs every ~100ms as per the "setInterval" call in the onOpen function) ---------//
+//--------- Data Timer (runs every ~50ms as per the "setInterval" call in the onOpen function) ---------//
 function sendDataTimer() {
 	//alert("test")
 	//console.log(document.querySelector(":focus"));
@@ -247,6 +247,7 @@ function sendEpoch() {
 	console.log("CurrentTime_SET|" + String(currentEpoch) + "|" + String(currentTime.getTimezoneOffset()));
 	connection.send("CurrentTime_SET|" + String(currentEpoch) + "|" + String(currentTime.getTimezoneOffset()));
 }
+
 </script>
 	  </head>
 	<body>
@@ -262,8 +263,9 @@ function sendEpoch() {
 				<div data-role="fieldcontain">
 				  <label for="time1">Wakeup Time</label>
 				  <form>
-				  <input type=time name=JTime value="06:00" onfocus='sendEpoch()' onchange="this.form.submit()" >
-				  </form>
+				  <input type=time name=JTime value="07:30" onfocus='sendEpoch()' onchange="this.form.submit()" >
+				  <input type="button" value="Set Default of 7:30" onfocus='sendEpoch()' onclick="this.form.submit()">
+				</form>
 				<div data-role="fieldcontain" id="WhiteSlider">
 					<label for="WhiteSlider-range">White</label>
 					<input type="range" id="WhiteSlider-range" onchange='(function(){lastChanged="ManualWhite"})()' value="0" min="0" max="1024" step="1" data-highlight="true" />
@@ -289,8 +291,14 @@ function sendEpoch() {
 				<input type="button" onclick='sendEpoch()' />
 			</div>
 		<div data-role="fieldcontain">
-			<label for="text2">Reconnect</label>
+			<label for="text4">Reconnect</label>
 			<input type="button" onclick='createWebsocket()' />
+		</div>
+		<div data-role="fieldcontain">
+			<label for="text5">Reset Alarm Clock</label>
+			<form>
+			<input type="submit" value="restartESP8266">
+			</form>
 		</div>
 			<p id="messages">	-	</p>
 			<p id="timeMessage">	-	</p>

@@ -1,15 +1,17 @@
 #include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
+//#include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include <DNSServer.h>
+#include <ESP8266WebServer.h>
+#include "WiFiManager.h"
 
 //Options:
-const bool createAccessPoint = false;
-const char* ssid = "TELUS4201";
-const char* password = "ilovegreeneggsandham312";
-const byte DNS_PORT = 53;
-const IPAddress apIP(192, 168, 3, 150);
+//const bool createAccessPoint = false;
+//const char* ssid = "TELUS4201";
+//const char* password = "ilovegreeneggsandham312";
+//const byte DNS_PORT = 53;
+//const IPAddress apIP(192, 168, 3, 150);
 
 //Globals:
 DNSServer dnsServer;
@@ -17,11 +19,17 @@ DNSServer dnsServer;
 void OTAsetup() {
   Serial.begin(115200);
   Serial.println("Booting");
-  Serial.print("Create access point?: ");
-  Serial.println(String(createAccessPoint));
+  Serial.println("Attempting reconnect to wifi.  If failed, look for TELUS4201");
+  WiFiManager wifiManager;
+  wifiManager.setConfigPortalTimeout(180);
+  wifiManager.autoConnect("TELUS4201","ilovegreeneggsandham312");
 
-  if (createAccessPoint == true)
-  {
+
+  //Serial.print("Create access point?: ");
+  //Serial.println(String(createAccessPoint));
+/*
+  //if (createAccessPoint == true)
+  //{
     WiFi.mode(WIFI_AP); //Access point
 
     Serial.print("Configuring access point ... ");
@@ -29,35 +37,36 @@ void OTAsetup() {
 
     Serial.print("Creating access point ... ");
     //Serial.println(WiFi.begin(ssid, password) ? "succeeded" : "failed!");
-    Serial.println(WiFi.softAP(ssid, password) ? "succeeded" : "failed!");
+   // Serial.println(WiFi.softAP(ssid, password) ? "succeeded" : "failed!");
     Serial.println("If the ip is 0.0.0.0, likely's it's actually 192.168.1.1");
 
 //https://github.com/esp8266/Arduino/blob/4897e0006b5b0123a2fa31f67b14a3fff65ce561/libraries/DNSServer/examples/DNSServer/DNSServer.ino
 
-/*
-    dnsServer.setTTL(300);
-    dnsServer.setErrorReplyCode(DNSReplyCode::ServerFailure);
-    dnsServer.start(DNS_PORT, "*", apIP);
 
-    dnsServer.processNextRequest();
-    */
+  //  dnsServer.setTTL(300);
+  //  dnsServer.setErrorReplyCode(DNSReplyCode::ServerFailure);
+  //  dnsServer.start(DNS_PORT, "*", apIP);
+  //
+  //  dnsServer.processNextRequest();
+    
 
     Serial.println("SSID 'TELUS1846', Password: 'publics***' created");
     Serial.println("IP of access point is " + WiFi.softAPIP());
     //Serial.println("IP of Esp8266 is " + WiFi.localIP());
   }
-  else
+  else 
+  */
   {
 
-    Serial.println("Looking for SSID 'TELUS4201', Password: 'il***'");
-    WiFi.begin(ssid, password);
+    //Serial.println("Looking for SSID 'TELUS4201', Password: 'il***'");
+    //WiFi.begin(ssid, password);
     //Wait for connection to complete
     while (WiFi.waitForConnectResult() != WL_CONNECTED) {
       Serial.println("Connection Failed! Rebooting...");
       delay(5000);
       ESP.restart();
     }
-    Serial.println("IP of Esp8266 is " + WiFi.localIP());
+    Serial.println("IP of Esp8266 is " + WiFi.localIP().toString());
   }
 
 

@@ -13,7 +13,7 @@
 #include <ESP8266WiFi.h>
 #include <Servo.h>
 #include <WiFiUdp.h>
-#include <ESP8266mDNS.h>
+//#include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
 #include <FS.h>
 #include <Stream.h>
@@ -23,6 +23,7 @@
 #include <DNSServer.h>
 #include "Time.h"
 #include "TimeLib.h"
+#include "WiFiManager.h"
 
 int PIN_RED = 12; //IO12, Pin10
 int PIN_GREEN = 14; //IO14, Pin9

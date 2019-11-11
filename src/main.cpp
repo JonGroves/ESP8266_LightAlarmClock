@@ -1,3 +1,4 @@
+#include "main.h"
 /*
  *  The server will set a GPIO pin depending on the request
  *    http://server_ip/gpio/0 will set the GPIO5 low,
@@ -6,13 +7,11 @@
  *  printed to Serial when the module is connected.
  */
 
-#include "main.h"
-
 //Options:
 const bool getTimefromNTP = false;
 const int wakeupDuration = 30; //in minutes
 int ledIntensityArray[] = {0,0,0};
-//const int timeZoneOffset = -8*60*60
+
 // ___________________________________________________________________________
 void setup() {
   OTAsetup();
@@ -20,15 +19,13 @@ void setup() {
   setLEDIntensity(0);
 
   // Start the mDNS for the network (Doesn't work on android)
-  MDNSConnect();
-
+  //MDNSConnect();
 
   // Start the websockets
   Serial.print("Starting websockets...");
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
   Serial.println("Done!");
-  //OTA makes sure it's connected to the network
 
    //Begin udp port for getting NTP time
    udp.begin(localPort);
@@ -66,7 +63,6 @@ void setup() {
     brightnessCurve(led_counter,ledIntensityArray); //Calculate the ledIntensityArray and have these values edited
     //Serial.println(String(ledIntensityArray[0])+"|"+String(ledIntensityArray[1])+"|"+String(ledIntensityArray[2]));
     setLEDIntensity(ledIntensityArray); //Pass the ledIntensityArray to the setLEDIntensity function
-    //setLEDIntensity(led_counter);
     delay(1);
   }
   for(int led_counter=1024; led_counter>=0; led_counter--)
@@ -74,7 +70,6 @@ void setup() {
     brightnessCurve(led_counter,ledIntensityArray); //Calculate the ledIntensityArray and have these values edited
     //Serial.println(String(ledIntensityArray[0])+"|"+String(ledIntensityArray[1])+"|"+String(ledIntensityArray[2]));
     setLEDIntensity(ledIntensityArray); //Pass the ledIntensityArray to the setLEDIntensity function
-    //setLEDIntensity(led_counter);
     delay(1);
   }
   digitalWrite(PIN_RED, 0);
@@ -83,11 +78,6 @@ void setup() {
 
   Serial.println("Done!");
 
-
-  //Serial.println("This websocket loop really slows down transfering the js, css, and html files.  Not sure why, but look into it!");
-  //Serial.println("IP of access point is " + WiFi.softAPIP());
-  //Serial.println("IP2 is " + WiFi.localIP());
-  //  Serial.println("Waiting for a client...");
 }
 
 // ___________________________________________________________________________
@@ -103,19 +93,16 @@ void loop() {
     return; //Terminate a function and return a value from a function to the calling function, if desired.
   }
 
-  // Wait until the client sends some data
-  //Serial.println("Client connected");
-
   while(!client.available()){
     delay(1);
   }
 Serial.println("client found");
-//Fix slow sending of files from SPIFFS (https://github.com/esp8266/Arduino/issues/1853)
+//Fixes slow sending of files from SPIFFS (https://github.com/esp8266/Arduino/issues/1853)
   client.setNoDelay(1); //about 3 times faster
 
   // Read the first line of the request
   String req = client.readStringUntil('\r');
-  //Serial.println(req);
+  Serial.println(req);
   client.flush();
 
   // Match the request
@@ -127,14 +114,10 @@ Serial.println("client found");
       int StartCharIndex = req.indexOf("JTime=");
       int JTimeHr = req.substring(StartCharIndex + 6,StartCharIndex + 8).toInt();
       int JTimeMin = req.substring(StartCharIndex + 11,StartCharIndex + 13).toInt();
-      //int timerEndHours = long((24 + double(JTimeHr) + double(JTimeMin)/60)-(double(startingHour) + double(startingMinute)/60)) % 24;
-      //int timerEndMinutes = long(60 + JTimeMin - startingMinute) % 60;
 
       //Calculate time until alarm time by setting the alarm time as the time, finding the epoch, changing the time back, and calculating the differece in seconds
       unsigned long currentTime = now();
       adjustTime(12*60*60); //Add 12 hours so the day will be right when we set the time (ie. for tomorrow)
-      //int currentMinute = minute();
-      //int currentHour = hour();
       int timerDay = day();
       int timerMonth = month();
       int timerYear = year();
@@ -155,8 +138,6 @@ Serial.println("client found");
       Serial.println("JTimeHr: " + String(JTimeHr));
       Serial.println("JTimeMin: " + String(JTimeMin));
       Serial.println("Total timer duration: " + String(timerDuration) + " seconds.");
-      //Serial.println("Turning off wifi");
-      //WiFi.mode(WIFI_OFF);
       Serial.println("Starting LED code...");
       Serial.flush();
       webSocket.broadcastTXT("Request is " + String(req) + ". JTimeHr: " + String(JTimeHr) + ". JTimeMin: " + String(JTimeMin) + ". Total timer duration: " + String(timerDuration) + " seconds. Starting LED code...");
@@ -171,7 +152,10 @@ Serial.println("client found");
     startingMinute = req.substring(StartCharIndex + tempString.length() + 5,StartCharIndex + tempString.length() + 5 + 2).toInt();
     startingSecond=0; //not required
     startingEpoch=0;  //not required
-    //setTime(startingMinute,startingMinute,startingSecond,0,0,0);  //Set current time // setTime(hr,min,sec,day,month,yr);
+  }
+  else if (req.indexOf("restartESP8266=") != -1) //resetart was specified
+  {
+    ESP.restart();
   }
   else
   {
@@ -213,7 +197,6 @@ Serial.println("client found");
     else
     {
       String htmlCode = "";
-      //file.setTimeout(5000);
       while (file.peek() != -1)
       {
        htmlCode += file.readStringUntil('\r');
@@ -245,10 +228,6 @@ Serial.println("client found");
       htmlCode.replace("String(startingMinute)",String(startingMinute));
       htmlCode.replace("String(startingSecond)",String(startingSecond));
       htmlCode.replace("String(startingEpoch)",String(startingEpoch));
-     // int htmlCodeLength = htmlCode.length() + 1; //+1 for null terminator
-     // char htmlCodeCharArray[htmlCodeLength];
-   //   htmlCode.toCharArray(htmlCodeCharArray, htmlCodeLength);
-   //   const char * htmlCodeCharArray = htmlCode.c_str();
 
      //Sending data  in chucks overrides the small buffer and timeout of sending data as one string
      for(int startOfChunk = 0; startOfChunk < htmlCode.length(); startOfChunk += 2048)
@@ -266,7 +245,6 @@ Serial.println("client found");
      }
    }
 
-
     //Serial.println(htmlCode);
     Serial.println("Done!");
     client.flush();
@@ -274,9 +252,6 @@ Serial.println("client found");
 
     return;
   }
-
-  // Set GPIO5 according to the request
-//  digitalWrite(5, val);
 
   // Prepare the response
   String s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nGPIO is now ";
@@ -348,7 +323,6 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
           delay(500);
           digitalWrite(13, LOW);
           Serial.println("led just lit");
-          //webSocket.sendTXT(num, "led just lit", length);
           webSocket.broadcastTXT("led just lit");
         }
         if (text.startsWith("getNTP")) {
@@ -377,10 +351,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
           int startIndex2 = text.indexOf("|",endIndex1)+1;
           int endIndex2 = text.length();
           time_t tempEpoch = (unsigned long)((text.substring(startIndex1,endIndexAdjusted1).toInt())) - (unsigned long)(text.substring(startIndex2,endIndex2).toInt())*60; //8hrs for PST (Nov-Mar)
-          //unsigned long tempEpoch2 = (unsigned long)(text.substring(endIndex-5,endIndex).toInt()) + ((unsigned long)(text.substring(startIndex,endIndex-5)).toInt())*10000;
           setTime(tempEpoch);
           Serial.println("tempepoch:"+ String(tempEpoch));
-          //Serial.println("tempepoch2:"+ String(tempEpoch2));
           String timeMessage = "Time Message: " + String(hour()) + ":" + String(minute()) + ":" + String(second()); //Will be filtered and not overwrite the normal broadcast message due to "Time Message:"
           webSocket.broadcastTXT("Time Message: " + timeMessage);
           Serial.println("Time Message: " + timeMessage);
@@ -402,51 +374,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
           setLEDIntensity(RedInt,GreenInt,BlueInt);
           //DEBUGGING(xVal);
           String message = text;
-          //webSocket.sendTXT(num, message);
-          //webSocket.broadcastTXT(message);
-          //webSocket.broadcastTXT("|" + String(RedInt) + "|" + String(GreenInt) + "|" + String(BlueInt) + "|");
         }
-
-        /*
-        if (text.startsWith("y")) {
-          String yVal = (text.substring(text.indexOf("y") + 1, text.length()));
-          int yInt = yVal.toInt();
-          //analogWrite(GREENPIN, yInt);
-          //DEBUGGING(yVal);
-        }
-
-        if (text.startsWith("z")) {
-          String zVal = (text.substring(text.indexOf("z") + 1, text.length()));
-          int zInt = zVal.toInt();
-          //analogWrite(BLUEPIN, zInt);
-          //DEBUGGING(zVal);
-        }
-        if (text.startsWith("t")) {
-          String tVal = (text.substring(text.indexOf("t") + 1, text.length()));
-          rainbowDelay = tVal.toInt();
-          lastTimeRefreshRainbow = 0;
-          lastTimeRefresh = 0;
-          //DEBUGGING(tVal);
-        }
-        if (text == "RESET") {
-          rainbowFlag = 0;
-          //analogWrite(BLUEPIN, LOW);
-          //analogWrite(REDPIN, LOW);
-          //analogWrite(GREENPIN, LOW);
-          //DEBUGGING("reset");
-
-        }
-        if (text == "RAINBOW") {
-          rainbowFlag = 1;
-          lastTimeRefreshRainbow = 0;
-          lastTimeRefresh = 0;
-          //for (int iii = 0; iii < 256; iii++) {
-            //writeWheel(iii, RGB);
-            //delay(10);
-          //}
-          //DEBUGGING("rainbow");
-        }
-        */
       }
       break;
 
@@ -463,13 +391,13 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 // ___________________________________________________________________________
 void MDNSConnect() {
   //NOTE: the MDNS works, but android can't handle mdns.  Try from a computer
-  Serial.print("Setting up MDNS (Only accessible from computer) ... ");
-  Serial.println(MDNS.begin("JLightAlarm") ? "succeeded" : "failed!");
+  //Serial.print("Setting up MDNS (Only accessible from computer) ... ");
+  //Serial.println(MDNS.begin("JLightAlarm") ? "succeeded" : "failed!");
 
-  Serial.print("Adding MDNS websockets and http ports ... ");
-  MDNS.addService("ws", "tcp", 81);
-  MDNS.addService("http", "tcp", 80);
-  Serial.println("Done");
+  //Serial.print("Adding MDNS websockets and http ports ... ");
+  //MDNS.addService("ws", "tcp", 81);
+  //MDNS.addService("http", "tcp", 80);
+  //Serial.println("Done");
 }
 
 // ___________________________________________________________________________
@@ -486,7 +414,7 @@ void alertWithLED(int numTimes, int onTimeMS, int offTimeMS)
   }
 }
 
-//Note: ctrl+/ comments and uncomments quickly
+
 // ___________________________________________________________________________
 void startLEDCode(unsigned long timerDuration) {
   //***** Start of led code ****
@@ -496,19 +424,13 @@ void startLEDCode(unsigned long timerDuration) {
                       for(int ledSetpoint = 0; ledSetpoint <= 1024; ledSetpoint++)
                       {
                         brightnessCurve(ledSetpoint,ledIntensityArray); //Calculate the ledIntensityArray and have these values edited
-                        //Serial.println(String(ledIntensityArray[0])+"|"+String(ledIntensityArray[1])+"|"+String(ledIntensityArray[2]));
                         setLEDIntensity(ledIntensityArray); //Pass the ledIntensityArray to the setLEDIntensity function
-                        //setLEDIntensity(ledSetpoint);
-                        //Serial.println("Intensity = " + String(ledSetpoint));
                         delay(5);                       // waits 15ms
                       }
                       for(int ledSetpoint = 1024; ledSetpoint >= 0; ledSetpoint--)
                       {
                         brightnessCurve(ledSetpoint,ledIntensityArray); //Calculate the ledIntensityArray and have these values edited
-                        //Serial.println(String(ledIntensityArray[0])+"|"+String(ledIntensityArray[1])+"|"+String(ledIntensityArray[2]));
                         setLEDIntensity(ledIntensityArray); //Pass the ledIntensityArray to the setLEDIntensity function
-                        //setLEDIntensity(ledSetpoint);
-                        //Serial.println("Intensity = " + String(ledSetpoint));
                         delay(5);                       // waits 15ms
                       }
 
@@ -517,8 +439,6 @@ void startLEDCode(unsigned long timerDuration) {
                       int minutesLeft = (int)((timerDuration / 60 ) - (hoursLeft * 60));
                       int secondsLeft;
                       Serial.println("Waiting " + String(hoursLeft) + " Hours and " + String(minutesLeft) + " minutes...");
-                      //Serial.println(String((timerDuration - millis()) / 1000) + " seconds left");
-                      //Serial.println("Hopefully, " + String(timerDuration) + "is greater than " + String(millis()/1000));
                       String lastStringSent="";
                       String currentString;
                       while (timerDuration > (millis()/1000)) {
@@ -535,9 +455,6 @@ void startLEDCode(unsigned long timerDuration) {
                         secondsLeft  = (int)((timerDuration - (millis() / 1000)) - (hoursLeft * 60 * 60) - (minutesLeft * 60));
 
                         //Blink the LED every second
-                        //digitalWrite(2,LOW); //Turns on LED
-                        //delay(1);
-                        //digitalWrite(2,HIGH); //Turns off LED
                         delay(200);
                         if (hoursLeft>24)
                         {
@@ -559,11 +476,8 @@ void startLEDCode(unsigned long timerDuration) {
                       for(int ledSetpoint = 0; ledSetpoint <= 1024; ledSetpoint++)
                       {
                         brightnessCurve(ledSetpoint,ledIntensityArray); //Calculate the ledIntensityArray and have these values edited
-                        //Serial.println(String(ledIntensityArray[0])+"|"+String(ledIntensityArray[1])+"|"+String(ledIntensityArray[2]));
                         setLEDIntensity(ledIntensityArray); //Pass the ledIntensityArray to the setLEDIntensity function
-                        //Serial.println("Intensity = " + String(ledSetpoint));
                         delay(incrementalTime);   // waits 1758ms (1.758 seconds) so that the light brightens over 30 mins (30*60*1000/1024)
-                        //alertWithLED(1, 50, 0);
                       }
 
                       Serial.println("Ending LED code and starting infinite loop.");
@@ -577,46 +491,42 @@ void startLEDCode(unsigned long timerDuration) {
 void brightnessCurve(int timeIndex, int ledSetpointArray[])
 {
   ledSetpointArray[0] = min(max((int)(pow((double)timeIndex,(double)1.2)),0),1024);
-  ledSetpointArray[1] = min(max((int)(pow(max((double)timeIndex-250,0),(double)1.2)),0),1024);
-  ledSetpointArray[2] = min(max((int)(pow(max((double)timeIndex-480,0),(double)1.1)),0),1024);
-  //=MAX(MIN(ROUND(($A3)^1.2,0),1024),0)  =MAX(MIN(ROUND(($A3-250)^1.2,0),1024),0) =MAX(MIN(ROUND(($A3-480)^1.1,0),1024),0)
+  ledSetpointArray[1] = min(max((int)(pow(max((double)timeIndex-250,(double) 0),1.2)),0),1024);
+  ledSetpointArray[2] = min(max((int)(pow(max((double)timeIndex-480,(double) 0),1.1)),0),1024);
 }
 
 // ___________________________________________________________________________
 void getWebsite(String serverUrl, String websiteURL)
 {
-Serial.println("Connecting to " + String(serverUrl) + String(websiteURL));
+  Serial.println("Connecting to " + String(serverUrl) + String(websiteURL));
   int status = WL_IDLE_STATUS;
   // if you don't want to use DNS (and reduce your sketch size)
-// use the numeric IP instead of the name for the server:
-//IPAddress server(74,125,232,128);  // numeric IP for Google (no DNS)
-char buf[1];
-char server[serverUrl.length()+1];
-serverUrl.toCharArray(server, serverUrl.length()+1);    //DO NOT USE HTTP://
-//char server[] = "www.google.com";    // name address for Google (using DNS)
+  // use the numeric IP instead of the name for the server:
+  //IPAddress server(74,125,232,128);  // numeric IP for Google (no DNS)
+  char buf[1];
+  char server[serverUrl.length()+1];
+  serverUrl.toCharArray(server, serverUrl.length()+1);    //DO NOT USE HTTP://
+  //char server[] = "www.google.com";    // name address for Google (using DNS)
 
   Serial.println("1");
-// Initialize the Ethernet client library
-// with the IP address and port of the server
-// that you want to connect to (port 80 is default for HTTP):
-WiFiClient client;
+  // Initialize the Ethernet client library
+  // with the IP address and port of the server
+  // that you want to connect to (port 80 is default for HTTP):
+  WiFiClient client;
 
-Serial.println("\nStarting connection to server...");
+  Serial.println("\nStarting connection to server...");
   // if you get a connection, report back via serial:
   if (client.connect(server, 80)) {
     Serial.println("connected to server");
     // Make a HTTP request:
     client.println("GET /u/2452011/LightAlarm/index.php HTTP/1.1");
     client.println("Host: " + String(serverUrl));
- //       client.println("GET /search?q=arduino HTTP/1.1");
- //   client.println("Host: www.google.com");
-     client.println("User-Agent: Mozilla/5.0 (Windows NT 6.3; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0");
+    client.println("User-Agent: Mozilla/5.0 (Windows NT 6.3; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0");
     client.println("Connection: close");
     client.println();
     client.flush();
     Serial.println("GET " + String(websiteURL) + " HTTP/1.1");  // /pst/now?\\H:\\M:\\S
     Serial.println("Host: " + String(serverUrl));
-
     Serial.println("Connection: close");
     Serial.flush();
   }
@@ -627,9 +537,8 @@ Serial.println("\nStarting connection to server...");
 
   delay(1000);
 
-
-    Serial.flush();
- // if there are incoming bytes available
+  Serial.flush();
+  // if there are incoming bytes available
   // from the server, read them and print them:
   while (client.available()) {
     char c = client.read();
@@ -719,7 +628,6 @@ bool getCurrentNTPTime(unsigned long &currentEpoch, int &currentHour, int &curre
 
 
     // print the hour, minute and second:
-
     currentHour = (epoch  % 86400L) / 3600;  // the hour (86400 equals secs per day)
     currentMinute = (epoch  % 3600) / 60; // the minute (3600 equals secs per minute)
     currentSecond = epoch % 60; // the second

@@ -5,3 +5,5 @@
  - Websockets for color selection and brightness
  - Over the air (OTA) updating of code.
  - NTP servers for time
+## Circuit Board
+The corresponding PCB can be found [here](https://github.com/JonGroves/KiCad_LightAlarmClock/).
